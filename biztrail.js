@@ -255,3 +255,56 @@ function setProgressBarFill(percentage) {
 
 // For demonstration, set it to 60%
 setProgressBarFill(60);
+
+const targetDate = new Date('November 30, 2023 23:59:59').getTime();
+function updateTimer() {
+    const now = new Date().getTime();
+    const timeDifference = targetDate - now;
+
+    if (timeDifference <= 0) {
+        clearInterval(interval);
+        return;
+    }
+
+    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+    // Assuming your spans are in order, we'll update them
+    const spans = document.querySelectorAll('.text-countdown span');
+    spans[0].textContent = Math.floor(days / 10);
+    spans[1].textContent = days % 10;
+    spans[2].textContent = Math.floor(hours / 10);
+    spans[3].textContent = hours % 10;
+    spans[4].textContent = Math.floor(minutes / 10);
+    spans[5].textContent = minutes % 10;
+    spans[6].textContent = Math.floor(seconds / 10);
+    spans[7].textContent = seconds % 10;
+}
+
+const interval = setInterval(updateTimer, 1000);
+
+/**
+ * Get user's geolocation coordinates.
+ * Returns a LatLng object if successful, otherwise null.
+ */
+async function getUserLocation() {
+    if ("geolocation" in navigator) {
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    timeout: 10000 // Optional: Set a timeout, e.g., 10 seconds
+                });
+            });
+            return {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+        } catch (error) {
+            console.error("Error obtaining geolocation:", error);
+        }
+    }
+    alert("Geolocation not supported by this browser.");
+    return null;
+}
