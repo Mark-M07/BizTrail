@@ -12,6 +12,11 @@ function changeTab(targetTabId) {
         btn.classList.remove('active-tab');
     });
 
+    if (targetTabId === "tab3")
+        startScanning();
+    else
+        stopScanning();
+
     // Activate the target tab's content
     const targetTab = document.getElementById(targetTabId);
     targetTab.style.display = 'block';  // Set display to block
@@ -307,4 +312,41 @@ async function getUserLocation() {
     }
     alert("Geolocation not supported by this browser.");
     return null;
+}
+
+const qrCodeScanner = new Html5Qrcode('scanner');
+
+/*document.getElementById("scan-button").addEventListener("click", () => {
+  startScanning();
+});*/
+
+/*document.getElementById("stop-button").addEventListener("click", () => {
+    stopScanning();
+});*/
+
+function startScanning() {
+    //document.getElementById("scanner-div").style.display = 'block';
+    qrCodeScanner.start(
+        { facingMode: "environment" },
+        (error) => {
+            console.error("QR code scanning failed: ", error);
+        },
+        onScanSuccess
+    ).catch((error) => {
+        console.error("QR code scanning failed: ", error);
+    });
+}
+
+function stopScanning() {
+    qrCodeScanner.stop().catch((error) => {
+        console.error("Failed to stop QR code scanning: ", error);
+    });
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    const url = new URL(decodedText);
+    console.log("Scan Success!");
+    //const imageKey = url.searchParams.get("pet");
+    stopScanning();
+    changeTab('tab1');
 }
