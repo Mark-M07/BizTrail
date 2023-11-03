@@ -20,12 +20,14 @@ function changeTab(targetTabId) {
     if (targetTabId === "tab3") {
         if (!isScannerActive) {
             startScanning();
-        } else {
+        }
+        else if (isScannerPaused) {
             resumeScanning();
         }
-    } else {
-        pauseScanning();
-    }    
+        else {
+            pauseScanning();
+        }
+    }
 
     // Activate the target tab's content
     const targetTab = document.getElementById(targetTabId);
@@ -320,32 +322,40 @@ async function getUserLocation() {
 
 const qrCodeScanner = new Html5Qrcode('scanner');
 let isScannerActive = false;
+var isScannerPaused = false;
 
 function startScanning() {
-    //document.getElementById("scanner-div").style.display = 'block';
     qrCodeScanner.start(
         { facingMode: "environment" },
-        (error) => {
-            console.error("QR code scanning failed: ", error);
+        (decodedText, decodedResult) => {
+            onScanSuccess(decodedText, decodedResult);
         },
-        onScanSuccess
-    ).catch((error) => {
+        (errorMessage) => {
+            console.error("QR code scanning failed: ", errorMessage);
+        }
+    ).then(() => {
+        isScannerActive = true;
+    }).catch((error) => {
         console.error("QR code scanning failed: ", error);
     });
 }
 
 function pauseScanning() {
-    if (isScannerActive) {
-        qrCodeScanner.pause();
-        // No need to catch as we are sure scanner is active
-    }
+    qrCodeScanner.pause().then(() => {
+        isScannerPaused = true;
+    }).catch((error) => {
+        console.error("Failed to pause QR code scanning: ", error);
+    });
+
 }
 
 function resumeScanning() {
-    if (isScannerActive) {
-        qrCodeScanner.resume();
-        // No need to catch as we are sure scanner is active
-    }
+    qrCodeScanner.resume().then(() => {
+        isScannerPaused = false;
+    }).catch((error) => {
+        console.error("Failed to resume QR code scanning: ", error);
+    });
+
 }
 
 function onScanSuccess(decodedText, decodedResult) {
