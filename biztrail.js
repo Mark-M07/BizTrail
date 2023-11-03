@@ -345,8 +345,7 @@ function stopScanning() {
 
 function onScanSuccess(decodedText, decodedResult) {
     const url = new URL(decodedText);
-    console.log("Scan Success!");
+    console.log(url);
     //const imageKey = url.searchParams.get("pet");
-    stopScanning();
-    changeTab('tab1');
+    changeTab('tab1'); // Changing tab automatically stops the scanning
 }
