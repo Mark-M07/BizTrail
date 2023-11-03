@@ -18,15 +18,10 @@ function changeTab(targetTabId) {
     });
 
     if (targetTabId === "tab3") {
-        if (!isScannerActive) {
-            startScanning();
-        }
-        else if (isScannerPaused) {
-            resumeScanning();
-        }
-        else {
-            pauseScanning();
-        }
+        startScanning();
+    }
+    else if (isScannerActive) {
+        stopScanning();
     }
 
     // Activate the target tab's content
@@ -322,7 +317,6 @@ async function getUserLocation() {
 
 const qrCodeScanner = new Html5Qrcode('scanner');
 let isScannerActive = false;
-var isScannerPaused = false;
 
 function startScanning() {
     qrCodeScanner.start(
@@ -340,22 +334,14 @@ function startScanning() {
     });
 }
 
-function pauseScanning() {
-    try {
-        qrCodeScanner.pause();
-        isScannerPaused = true;
-    } catch (error) {
-        console.error("Failed to pause QR code scanning: ", error);
-    }
-}
-
-function resumeScanning() {
-    try {
-        qrCodeScanner.resume();
-        isScannerPaused = false;
-    } catch (error) {
-        console.error("Failed to resume QR code scanning: ", error);
-    }
+function stopScanning() {
+    qrCodeScanner.stop()
+        .then(() => {
+            isScannerActive = false;
+        })
+        .catch((error) => {
+            console.error("Failed to stop QR code scanning: ", error);
+        });
 }
 
 function onScanSuccess(decodedText, decodedResult) {
