@@ -254,11 +254,12 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-let totalPoints = 600;
+const maxPoints = 1000;
+let currentPoints = 500;
 
 function addPoints(points){
-    totalPoints += points;
-    setProgressBarFill((1000 / totalPoints) * 10);
+    currentPoints += points % maxPoints;
+    setProgressBarFill((currentPoints / maxPoints) * 100);
 }
 
 function setProgressBarFill(percentage) {
@@ -266,8 +267,7 @@ function setProgressBarFill(percentage) {
     progressBar.style.width = `${percentage}%`;
 }
 
-// For demonstration, set it to 60%
-setProgressBarFill(60);
+addPoints(100);
 
 const targetDate = new Date('November 30, 2023 23:59:59').getTime();
 function updateTimer() {
@@ -354,5 +354,5 @@ function onScanSuccess(decodedText, decodedResult) {
     console.log(url);
     //const imageKey = url.searchParams.get("pet");
     changeTab('tab1'); // Changing tab automatically stops the scanning
-    addPoints(100);
+    addPoints(150);
 }
