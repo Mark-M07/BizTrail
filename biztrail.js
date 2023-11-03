@@ -341,21 +341,21 @@ function startScanning() {
 }
 
 function pauseScanning() {
-    qrCodeScanner.pause().then(() => {
+    try {
+        qrCodeScanner.pause();
         isScannerPaused = true;
-    }).catch((error) => {
+    } catch (error) {
         console.error("Failed to pause QR code scanning: ", error);
-    });
-
+    }
 }
 
 function resumeScanning() {
-    qrCodeScanner.resume().then(() => {
+    try {
+        qrCodeScanner.resume();
         isScannerPaused = false;
-    }).catch((error) => {
+    } catch (error) {
         console.error("Failed to resume QR code scanning: ", error);
-    });
-
+    }
 }
 
 function onScanSuccess(decodedText, decodedResult) {
