@@ -254,6 +254,13 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
+let totalPoints = 600;
+
+function addPoints(points){
+    totalPoints += points;
+    setProgressBarFill((1000 / totalPoints) * 10);
+}
+
 function setProgressBarFill(percentage) {
     const progressBar = document.querySelector('.progress-fill');
     progressBar.style.width = `${percentage}%`;
@@ -347,4 +354,5 @@ function onScanSuccess(decodedText, decodedResult) {
     console.log(url);
     //const imageKey = url.searchParams.get("pet");
     changeTab('tab1'); // Changing tab automatically stops the scanning
+    addPoints(100);
 }
