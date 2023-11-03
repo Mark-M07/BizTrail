@@ -1,6 +1,11 @@
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
     ({ key: "AIzaSyBJg-GJpfYFVasB5r7kN0yD-WBtCLOcPaM", v: "beta" });
 
+document.querySelectorAll('.tablink').forEach(function (tabButton) {
+    tabButton.addEventListener('click', function () {
+        changeTab(this.getAttribute('data-tab'));
+    });
+});
 
 function changeTab(targetTabId) {
     // Deactivate all tabs
@@ -12,10 +17,15 @@ function changeTab(targetTabId) {
         btn.classList.remove('active-tab');
     });
 
-    if (targetTabId === "tab3")
-        startScanning();
-    else
-        stopScanning();
+    if (targetTabId === "tab3") {
+        if (!isScannerActive) {
+            startScanning();
+        } else {
+            resumeScanning();
+        }
+    } else {
+        pauseScanning();
+    }    
 
     // Activate the target tab's content
     const targetTab = document.getElementById(targetTabId);
@@ -27,12 +37,6 @@ function changeTab(targetTabId) {
     // Find the associated button for the tab and mark it as active
     document.querySelector(`.tablink[data-tab="${targetTabId}"]`).classList.add('active-tab');
 }
-
-document.querySelectorAll('.tablink').forEach(function (tabButton) {
-    tabButton.addEventListener('click', function () {
-        changeTab(this.getAttribute('data-tab'));
-    });
-});
 
 // Define the intersectionObserver outside your map initialization
 const intersectionObserver = new IntersectionObserver((entries) => {
@@ -315,14 +319,7 @@ async function getUserLocation() {
 }
 
 const qrCodeScanner = new Html5Qrcode('scanner');
-
-/*document.getElementById("scan-button").addEventListener("click", () => {
-  startScanning();
-});*/
-
-/*document.getElementById("stop-button").addEventListener("click", () => {
-    stopScanning();
-});*/
+let isScannerActive = false;
 
 function startScanning() {
     //document.getElementById("scanner-div").style.display = 'block';
@@ -337,10 +334,18 @@ function startScanning() {
     });
 }
 
-function stopScanning() {
-    qrCodeScanner.stop().catch((error) => {
-        console.error("Failed to stop QR code scanning: ", error);
-    });
+function pauseScanning() {
+    if (isScannerActive) {
+        qrCodeScanner.pause();
+        // No need to catch as we are sure scanner is active
+    }
+}
+
+function resumeScanning() {
+    if (isScannerActive) {
+        qrCodeScanner.resume();
+        // No need to catch as we are sure scanner is active
+    }
 }
 
 function onScanSuccess(decodedText, decodedResult) {
