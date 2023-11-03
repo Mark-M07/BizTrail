@@ -257,8 +257,12 @@ function deg2rad(deg) {
 const maxPoints = 1000;
 let currentPoints = 500;
 
-function addPoints(points){
-    currentPoints += points % maxPoints;
+function addPoints(points) {
+    currentPoints += points;
+    if (currentPoints >= maxPoints) {
+        console.log("Ticket added!");
+        currentPoints = currentPoints % maxPoints;
+    }
     setProgressBarFill((currentPoints / maxPoints) * 100);
 }
 
