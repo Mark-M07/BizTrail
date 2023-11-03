@@ -321,12 +321,10 @@ let isScannerActive = false;
 function startScanning() {
     qrCodeScanner.start(
         { facingMode: "environment" },
-        (decodedText, decodedResult) => {
-            onScanSuccess(decodedText, decodedResult);
+        (error) => {
+            console.error("QR code scanning failed: ", error);
         },
-        (errorMessage) => {
-            console.error("QR code scanning failed: ", errorMessage);
-        }
+        onScanSuccess
     ).then(() => {
         isScannerActive = true;
     }).catch((error) => {
