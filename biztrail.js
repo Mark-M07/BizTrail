@@ -469,7 +469,7 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-const maxPoints = 1000;
+/*const maxPoints = 1000;
 let currentPoints = 500;
 
 function addPoints(points) {
@@ -486,7 +486,7 @@ function setProgressBarFill(percentage) {
     progressBar.style.width = `${percentage}%`;
 }
 
-addPoints(100);
+addPoints(100);*/
 
 const targetDate = new Date('November 30, 2023 23:59:59').getTime();
 function updateTimer() {
@@ -573,5 +573,5 @@ function onScanSuccess(decodedText, decodedResult) {
     console.log(url);
     //const imageKey = url.searchParams.get("pet");
     changeTab('tab1'); // Changing tab automatically stops the scanning
-    addPoints(150);
+    //addPoints(150);
 }
