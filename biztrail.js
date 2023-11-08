@@ -298,28 +298,25 @@ async function initMap() {
 
         querySnapshot.forEach((doc) => {
             const property = doc.data();
-
             const firestorePosition = property.position;
             const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-            console.log(position);
-
-            const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
+            const Marker = new AdvancedMarkerElement({
                 map,
                 content: buildContent(property),
                 position: position,
                 title: property.title,
             });
 
-            markers.push(AdvancedMarkerElement);
+            markers.push(Marker);
 
             // Here's where you add the script:
-            const contentElement = AdvancedMarkerElement.content;
+            const contentElement = Marker.content;
             if (contentElement.querySelector('.fa-building')) {
                 contentElement.classList.add('contains-building');
             }
 
             // Apply animation to each property marker
-            const content = AdvancedMarkerElement.content;
+            const content = Marker.content;
             content.style.opacity = "0";
             content.addEventListener("animationend", (event) => {
                 content.classList.remove("drop");
@@ -329,8 +326,8 @@ async function initMap() {
             content.style.setProperty("--delay-time", time + "s");
             intersectionObserver.observe(content);
 
-            AdvancedMarkerElement.addListener("gmp-click", () => {
-                toggleHighlight(AdvancedMarkerElement);
+            Marker.addListener("gmp-click", () => {
+                toggleHighlight(Marker);
             });
         });
     }
