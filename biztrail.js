@@ -222,7 +222,7 @@ async function initMap() {
             const newCenter = new LatLng(lat, lng);
             map.setCenter(newCenter);
 
-            toggleHighlight(markers[propertyIndex], properties[propertyIndex]);
+            toggleHighlight(markers[propertyIndex]);
 
             changeTab('tab2');
         });
@@ -280,7 +280,7 @@ async function initMap() {
     generateMarkersFromFirestore();
 }
 
-function toggleHighlight(markerView, property) {
+function toggleHighlight(markerView) {
     // If there's a currently highlighted marker, remove its highlight.
     if (currentlyHighlighted && currentlyHighlighted !== markerView) {
         currentlyHighlighted.content.classList.remove("highlight");
