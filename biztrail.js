@@ -325,7 +325,7 @@ async function initMap() {
                     title: property.description,
                 });
 
-                markersArray.push(AdvancedMarkerElement);
+                markers.push(AdvancedMarkerElement);
 
                 // Here's where you add the script:
                 const contentElement = AdvancedMarkerElement.content;
