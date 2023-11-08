@@ -1,4 +1,3 @@
-import { Html5Qrcode } from "https://unpkg.com/html5-qrcode";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import {
     getAuth,
