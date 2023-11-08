@@ -110,7 +110,7 @@ async function initMap() {
 
     const markers = [];
 
-    for (const property of properties) {
+    /*for (const property of properties) {
         const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
             map,
             content: buildContent(property),
@@ -139,7 +139,57 @@ async function initMap() {
         AdvancedMarkerElement.addListener("gmp-click", () => {
             toggleHighlight(AdvancedMarkerElement, property);
         });
+    }*/
+
+    // Function to fetch properties from Firestore and generate markers
+    function generateMarkersFromFirestore() {
+        getDocs(collection(db, "properties"))
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const property = doc.data();
+
+                    const firestorePosition = property.position; // This should be the GeoPoint object
+                    const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
+                    console.log(position);
+
+                    const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
+                        map,
+                        content: buildContent(property),
+                        position: position,
+                        title: property.description,
+                    });
+
+                    markers.push(AdvancedMarkerElement);
+
+                    // Here's where you add the script:
+                    const contentElement = AdvancedMarkerElement.content;
+                    if (contentElement.querySelector('.fa-building')) {
+                        contentElement.classList.add('contains-building');
+                    }
+
+                    // Apply animation to each property marker
+                    const content = AdvancedMarkerElement.content;
+                    content.style.opacity = "0";
+                    content.addEventListener("animationend", (event) => {
+                        content.classList.remove("drop");
+                        content.style.opacity = "1";
+                    });
+                    const time = 0 + Math.random(); // Optional: random delay for animation
+                    content.style.setProperty("--delay-time", time + "s");
+                    intersectionObserver.observe(content);
+
+                    AdvancedMarkerElement.addListener("gmp-click", () => {
+                        toggleHighlight(AdvancedMarkerElement, property);
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Error getting documents from Firestore: ", error);
+            });
     }
+
+    // Call the function to generate markers
+    generateMarkersFromFirestore();
 }
 
 function toggleHighlight(markerView, property) {
