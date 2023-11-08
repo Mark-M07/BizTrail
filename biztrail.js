@@ -249,6 +249,8 @@ async function initMap() {
             // Initialize the countdown timer
             initializeCountdown(eventData.drawTime);
 
+            document.getElementById('max-points').textContent = eventData.maxPoints;
+
             // More code can go here where we might need eventData
 
             // Generate markers for the event
