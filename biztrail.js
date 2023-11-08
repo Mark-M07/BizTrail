@@ -233,7 +233,7 @@ async function initMap() {
     // Function to fetch properties from Firestore and generate markers
     async function generateMarkersFromFirestore() {
         try {
-            const querySnapshot = await getDocs(collection(db, "properties"));
+            const querySnapshot = await getDocs(collection(db, "events", "businessKyneton", "locations"));
             querySnapshot.forEach((doc) => {
                 const property = doc.data();
 
