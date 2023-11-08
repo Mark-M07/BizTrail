@@ -45,6 +45,8 @@ const addPoints = httpsCallable(functions, 'addPoints');
 // Initialize Firestore
 const db = getFirestore(app);
 
+window.addEventListener('load', initMap);
+
 // Listen to authentication state changes
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -231,102 +233,108 @@ async function initMap() {
     const markers = [];
     let interval;
 
-    // Function to fetch properties from Firestore and generate markers
-    async function generateMarkersFromFirestore() {
+    async function initializeEvent(eventName) {
         try {
-            // Fetching businessKyneton document first
-            const businessKynetonDoc = await getDoc(doc(db, "events", "businessKyneton"));
-            if (!businessKynetonDoc.exists()) {
-                console.log("No 'businessKyneton' document found!");
+            // Fetch event document first
+            const eventDoc = await getDoc(doc(db, "events", eventName));
+            if (!eventDoc.exists()) {
+                console.log("No 'events' document found!");
                 return;
             }
 
-            const businessKynetonData = businessKynetonDoc.data();
-            console.log(businessKynetonData);
+            const eventData = eventDoc.data();
 
-            // Countdown timer
-            const targetDate = businessKynetonData.drawTime.toDate().getTime();
+            // Initialize the countdown timer
+            initializeCountdown(eventData.drawTime);
 
-            function updateTimer() {
-                const now = new Date().getTime();
-                const timeDifference = targetDate - now;
+            // More code can go here where we might need eventData
 
-                if (timeDifference <= 0) {
-                    clearInterval(interval);
-                    // Perform additional actions if needed when the countdown ends
-                    return;
-                }
-
-                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-                // Assuming your spans are in order, we'll update them
-                const spans = document.querySelectorAll('.text-countdown span');
-                spans[0].textContent = Math.floor(days / 10);
-                spans[1].textContent = days % 10;
-                spans[2].textContent = Math.floor(hours / 10);
-                spans[3].textContent = hours % 10;
-                spans[4].textContent = Math.floor(minutes / 10);
-                spans[5].textContent = minutes % 10;
-                spans[6].textContent = Math.floor(seconds / 10);
-                spans[7].textContent = seconds % 10;
-            }
-
-            // Start the timer
-            updateTimer(); // Run it once to avoid initial delay
-            interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
-
-            // Generate markers
-            const querySnapshot = await getDocs(collection(db, "events", "businessKyneton", "locations"));
-            querySnapshot.forEach((doc) => {
-                const property = doc.data();
-
-                const firestorePosition = property.position;
-                const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-                console.log(position);
-
-                const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
-                    map,
-                    content: buildContent(property),
-                    position: position,
-                    title: property.title,
-                });
-
-                markers.push(AdvancedMarkerElement);
-
-                // Here's where you add the script:
-                const contentElement = AdvancedMarkerElement.content;
-                if (contentElement.querySelector('.fa-building')) {
-                    contentElement.classList.add('contains-building');
-                }
-
-                // Apply animation to each property marker
-                const content = AdvancedMarkerElement.content;
-                content.style.opacity = "0";
-                content.addEventListener("animationend", (event) => {
-                    content.classList.remove("drop");
-                    content.style.opacity = "1";
-                });
-                const time = 0 + Math.random(); // Optional: random delay for animation
-                content.style.setProperty("--delay-time", time + "s");
-                intersectionObserver.observe(content);
-
-                AdvancedMarkerElement.addListener("gmp-click", () => {
-                    toggleHighlight(AdvancedMarkerElement);
-                });
-            });
-
-            // More code can go here where you might need businessKynetonData
-
+            // Generate markers for the event
+            await generateEventMarkers(eventName);
         } catch (error) {
             console.error("Error getting documents from Firestore: ", error);
         }
     }
 
-    // Call the function to generate markers
-    generateMarkersFromFirestore();
+    function initializeCountdown(drawTime) {
+        const targetDate = drawTime.toDate().getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const timeDifference = targetDate - now;
+
+            if (timeDifference <= 0) {
+                clearInterval(interval);
+                // Perform additional actions if needed when the countdown ends
+                return;
+            }
+
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            // Assuming your spans are in order, we'll update them
+            const spans = document.querySelectorAll('.text-countdown span');
+            spans[0].textContent = Math.floor(days / 10);
+            spans[1].textContent = days % 10;
+            spans[2].textContent = Math.floor(hours / 10);
+            spans[3].textContent = hours % 10;
+            spans[4].textContent = Math.floor(minutes / 10);
+            spans[5].textContent = minutes % 10;
+            spans[6].textContent = Math.floor(seconds / 10);
+            spans[7].textContent = seconds % 10;
+        }
+
+        // Start the timer
+        updateTimer(); // Run it once to avoid initial delay
+        interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
+    }
+
+    const eventName = document.getElementById('event-name').textContent.trim();
+    initializeEvent(eventName);
+}
+
+async function generateEventMarkers(eventName) {
+    const querySnapshot = await getDocs(collection(db, "events", eventName, "locations"));
+
+    querySnapshot.forEach((doc) => {
+        const property = doc.data();
+
+        const firestorePosition = property.position;
+        const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
+        console.log(position);
+
+        const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
+            map,
+            content: buildContent(property),
+            position: position,
+            title: property.title,
+        });
+
+        markers.push(AdvancedMarkerElement);
+
+        // Here's where you add the script:
+        const contentElement = AdvancedMarkerElement.content;
+        if (contentElement.querySelector('.fa-building')) {
+            contentElement.classList.add('contains-building');
+        }
+
+        // Apply animation to each property marker
+        const content = AdvancedMarkerElement.content;
+        content.style.opacity = "0";
+        content.addEventListener("animationend", (event) => {
+            content.classList.remove("drop");
+            content.style.opacity = "1";
+        });
+        const time = 0 + Math.random(); // Optional: random delay for animation
+        content.style.setProperty("--delay-time", time + "s");
+        intersectionObserver.observe(content);
+
+        AdvancedMarkerElement.addListener("gmp-click", () => {
+            toggleHighlight(AdvancedMarkerElement);
+        });
+    });
 }
 
 function toggleHighlight(markerView) {
@@ -385,8 +393,6 @@ function buildContent(property) {
     });
     return content;
 }
-
-initMap();
 
 /*async function getDistance() {
   let userLocation = await getUserLocation();
