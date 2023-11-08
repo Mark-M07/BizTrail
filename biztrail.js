@@ -1,3 +1,17 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+import {
+    getAuth,
+    //signInWithPopup,
+    signInWithRedirect,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+// Import the Firebase Functions SDK
+import {
+    getFunctions,
+    httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.5.2/firebase-functions.js";
 import {
     getFirestore,
     doc,
@@ -8,6 +22,104 @@ import {
 
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
     ({ key: "AIzaSyBJg-GJpfYFVasB5r7kN0yD-WBtCLOcPaM", v: "beta" });
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyD5AQTiAWxG1viyNpPrdQaCPP2fnmZXgvA",
+    authDomain: "biz-trail.firebaseapp.com",
+    projectId: "biz-trail",
+    storageBucket: "biz-trail.appspot.com",
+    messagingSenderId: "972839717909",
+    appId: "1:972839717909:web:3283259443b400e13e521c"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+auth.languageCode = 'en';
+const provider = new GoogleAuthProvider();
+const functions = getFunctions(app, 'australia-southeast1');
+const addPoints = httpsCallable(functions, 'addPoints');
+
+// Initialize Firestore
+const db = getFirestore(app);
+
+// Listen to authentication state changes
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        updateUserProfile(user);
+
+        // Reference to the user's document
+        const userDocRef = doc(db, 'users', user.uid);
+
+        // Listen to the user's points in Firestore
+        onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+                const userData = doc.data();
+                // Update your text element with the new points
+                document.getElementById('pointsElement').textContent = userData.points;
+            } else {
+                // Handle the case where the user does not exist
+                console.log("Document does not exist");
+            }
+        });
+    } else {
+        console.log("User is not signed in");
+        // Optionally, handle the case where the user is not logged in.
+    }
+});
+
+document.getElementById("add-points").addEventListener("click", () => {
+    // Call the callable function
+    addPoints({ points: 50 }).then((result) => {
+        console.log(result.data);
+    }).catch((error) => {
+        console.error(`Error calling function: ${error.message}`);
+    });
+});
+
+// Update user profile in the UI
+function updateUserProfile(user) {
+    const userName = user.displayName;
+    const userEmail = user.email;
+    const userProfilePicture = user.photoURL + "?timestamp=" + new Date().getTime();
+
+    // Clear the srcset attribute to ensure the browser uses the src attribute
+    const imgElement = document.getElementById("userProfilePicture");
+    imgElement.srcset = '';
+    imgElement.sizes = ''; // Also clear sizes if needed
+    imgElement.src = userProfilePicture;
+
+    document.getElementById("userName").textContent = userName;
+    document.getElementById("userEmail").textContent = userEmail;
+}
+
+// Sign in with Google when the Google login button is clicked
+const googleLoginButton = document.getElementById("google-login-button");
+googleLoginButton.addEventListener("click", () => {
+    //signInWithPopup(auth, provider)
+    signInWithRedirect(auth, provider)
+        .then((result) => {
+            // The signed-in user info is handled by onAuthStateChanged
+        })
+        .catch((error) => {
+            console.error("Authentication error:", error);
+            // Handle Errors here.
+        });
+});
+
+// Logout user when the logout button is clicked
+const logoutButton = document.getElementById("logout-button");
+logoutButton.addEventListener("click", () => {
+    signOut(auth).then(() => {
+        // Reload the current URL
+        //window.location.reload();
+        // Redirect to the base domain URL
+        window.location.href = "/";
+    }).catch((error) => {
+        console.error("Sign out error:", error);
+    });
+});
 
 document.querySelectorAll('.tablink').forEach(function (tabButton) {
     tabButton.addEventListener('click', function () {
