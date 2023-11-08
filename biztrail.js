@@ -308,7 +308,7 @@ function buildContent(property) {
   <div class="details-close">
   <i class="fa fa-times"></i>
     </div>
-  <div class="description">${property.description}</div>
+  <div class="title">${property.title}</div>
   <div class="address">${property.address}</div>
   
   <div class="features">
