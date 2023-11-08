@@ -232,7 +232,7 @@ async function initMap() {
 
     const markers = [];
     let interval;
-    const eventName = document.getElementById('event-name').textContent.trim();
+    const eventName = document.getElementById('event-name').dataset.eventName;
     initializeEvent(eventName);
 
     async function initializeEvent(eventName) {
