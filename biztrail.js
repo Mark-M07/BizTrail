@@ -232,6 +232,8 @@ async function initMap() {
 
     const markers = [];
     let interval;
+    const eventName = document.getElementById('event-name').textContent.trim();
+    initializeEvent(eventName);
 
     async function initializeEvent(eventName) {
         try {
@@ -291,50 +293,47 @@ async function initMap() {
         interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
     }
 
-    const eventName = document.getElementById('event-name').textContent.trim();
-    initializeEvent(eventName);
-}
+    async function generateEventMarkers(eventName) {
+        const querySnapshot = await getDocs(collection(db, "events", eventName, "locations"));
 
-async function generateEventMarkers(eventName) {
-    const querySnapshot = await getDocs(collection(db, "events", eventName, "locations"));
+        querySnapshot.forEach((doc) => {
+            const property = doc.data();
 
-    querySnapshot.forEach((doc) => {
-        const property = doc.data();
+            const firestorePosition = property.position;
+            const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
+            console.log(position);
 
-        const firestorePosition = property.position;
-        const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-        console.log(position);
+            const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
+                map,
+                content: buildContent(property),
+                position: position,
+                title: property.title,
+            });
 
-        const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
-            map,
-            content: buildContent(property),
-            position: position,
-            title: property.title,
+            markers.push(AdvancedMarkerElement);
+
+            // Here's where you add the script:
+            const contentElement = AdvancedMarkerElement.content;
+            if (contentElement.querySelector('.fa-building')) {
+                contentElement.classList.add('contains-building');
+            }
+
+            // Apply animation to each property marker
+            const content = AdvancedMarkerElement.content;
+            content.style.opacity = "0";
+            content.addEventListener("animationend", (event) => {
+                content.classList.remove("drop");
+                content.style.opacity = "1";
+            });
+            const time = 0 + Math.random(); // Optional: random delay for animation
+            content.style.setProperty("--delay-time", time + "s");
+            intersectionObserver.observe(content);
+
+            AdvancedMarkerElement.addListener("gmp-click", () => {
+                toggleHighlight(AdvancedMarkerElement);
+            });
         });
-
-        markers.push(AdvancedMarkerElement);
-
-        // Here's where you add the script:
-        const contentElement = AdvancedMarkerElement.content;
-        if (contentElement.querySelector('.fa-building')) {
-            contentElement.classList.add('contains-building');
-        }
-
-        // Apply animation to each property marker
-        const content = AdvancedMarkerElement.content;
-        content.style.opacity = "0";
-        content.addEventListener("animationend", (event) => {
-            content.classList.remove("drop");
-            content.style.opacity = "1";
-        });
-        const time = 0 + Math.random(); // Optional: random delay for animation
-        content.style.setProperty("--delay-time", time + "s");
-        intersectionObserver.observe(content);
-
-        AdvancedMarkerElement.addListener("gmp-click", () => {
-            toggleHighlight(AdvancedMarkerElement);
-        });
-    });
+    }
 }
 
 function toggleHighlight(markerView) {
