@@ -45,7 +45,7 @@ const addPoints = httpsCallable(functions, 'addPoints');
 // Initialize Firestore
 const db = getFirestore(app);
 
-window.addEventListener('load', initMap);
+window.addEventListener('load', initializeApplication);
 
 // Listen to authentication state changes
 onAuthStateChanged(auth, (user) => {
@@ -170,7 +170,7 @@ const intersectionObserver = new IntersectionObserver((entries) => {
 
 let currentlyHighlighted = null;
 
-async function initMap() {
+async function initializeApplication() {
     // Request needed libraries.
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -212,7 +212,6 @@ async function initMap() {
         fullscreenControl: false // hides the fullscreen control
     });
 
-
     map.mapTypes.set('styled_map', styledMap);
     map.setMapTypeId('styled_map');
 
@@ -233,14 +232,14 @@ async function initMap() {
     const markers = [];
     let interval;
     const eventName = document.getElementById('event-name').dataset.eventName;
-    initializeEvent(eventName);
+    fetchEvent(eventName);
 
-    async function initializeEvent(eventName) {
+    async function fetchEvent(eventName) {
         try {
             // Fetch event document first
             const eventDoc = await getDoc(doc(db, "events", eventName));
             if (!eventDoc.exists()) {
-                console.log("No 'events' document found!");
+                console.log(`${eventName} 'event' document found!`);
                 return;
             }
 
@@ -254,7 +253,8 @@ async function initMap() {
             // More code can go here where we might need eventData
 
             // Generate markers for the event
-            await generateEventMarkers(eventName);
+            const locations = await getDocs(collection(db, "events", eventName, "locations"));
+            generateEventMarkers(locations);
         } catch (error) {
             console.error("Error getting documents from Firestore: ", error);
         }
@@ -295,10 +295,8 @@ async function initMap() {
         interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
     }
 
-    async function generateEventMarkers(eventName) {
-        const querySnapshot = await getDocs(collection(db, "events", eventName, "locations"));
-
-        querySnapshot.forEach((doc) => {
+    function generateEventMarkers(locations) {
+        locations.forEach((doc) => {
             const property = doc.data();
             const firestorePosition = property.position;
             const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
