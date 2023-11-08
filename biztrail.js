@@ -215,16 +215,11 @@ async function initMap() {
 
     document.querySelectorAll('.featured').forEach(btn => {
         btn.addEventListener('click', function (e) {
-            //const lat = parseFloat(e.currentTarget.getAttribute('data-lat'));
-            //const lng = parseFloat(e.currentTarget.getAttribute('data-lng'));
             const propertyIndex = parseInt(e.currentTarget.getAttribute('data-id'), 10);
 
             const marker = markers[propertyIndex];
 
-            //const newCenter = new LatLng(lat, lng);
-            //map.setCenter(newCenter);
-
-            map.setCenter(marker.position);            
+            map.setCenter(marker.position);
 
             toggleHighlight(marker);
 
@@ -233,10 +228,56 @@ async function initMap() {
     });
 
     const markers = [];
+    let interval;
 
     // Function to fetch properties from Firestore and generate markers
     async function generateMarkersFromFirestore() {
         try {
+            // Fetching businessKyneton document first
+            const businessKynetonDoc = await getDoc(doc(db, "events", "businessKyneton"));
+            if (!businessKynetonDoc.exists()) {
+                console.log("No 'businessKyneton' document found!");
+                return;
+            }
+
+            const businessKynetonData = businessKynetonDoc.data();
+            console.log(businessKynetonData);
+
+            // Countdown timer
+            const targetDate = businessKynetonData.drawTime.toDate().getTime();
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                const timeDifference = targetDate - now;
+
+                if (timeDifference <= 0) {
+                    clearInterval(interval);
+                    // Perform additional actions if needed when the countdown ends
+                    return;
+                }
+
+                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+                // Assuming your spans are in order, we'll update them
+                const spans = document.querySelectorAll('.text-countdown span');
+                spans[0].textContent = Math.floor(days / 10);
+                spans[1].textContent = days % 10;
+                spans[2].textContent = Math.floor(hours / 10);
+                spans[3].textContent = hours % 10;
+                spans[4].textContent = Math.floor(minutes / 10);
+                spans[5].textContent = minutes % 10;
+                spans[6].textContent = Math.floor(seconds / 10);
+                spans[7].textContent = seconds % 10;
+            }
+
+            // Start the timer
+            updateTimer(); // Run it once to avoid initial delay
+            interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
+
+            // Generate markers
             const querySnapshot = await getDocs(collection(db, "events", "businessKyneton", "locations"));
             querySnapshot.forEach((doc) => {
                 const property = doc.data();
@@ -275,6 +316,9 @@ async function initMap() {
                     toggleHighlight(AdvancedMarkerElement);
                 });
             });
+
+            // More code can go here where you might need businessKynetonData
+
         } catch (error) {
             console.error("Error getting documents from Firestore: ", error);
         }
@@ -392,34 +436,7 @@ function setProgressBarFill(percentage) {
 
 addPoints(100);*/
 
-const targetDate = new Date('November 30, 2023 23:59:59').getTime();
-function updateTimer() {
-    const now = new Date().getTime();
-    const timeDifference = targetDate - now;
 
-    if (timeDifference <= 0) {
-        clearInterval(interval);
-        return;
-    }
-
-    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-    // Assuming your spans are in order, we'll update them
-    const spans = document.querySelectorAll('.text-countdown span');
-    spans[0].textContent = Math.floor(days / 10);
-    spans[1].textContent = days % 10;
-    spans[2].textContent = Math.floor(hours / 10);
-    spans[3].textContent = hours % 10;
-    spans[4].textContent = Math.floor(minutes / 10);
-    spans[5].textContent = minutes % 10;
-    spans[6].textContent = Math.floor(seconds / 10);
-    spans[7].textContent = seconds % 10;
-}
-
-const interval = setInterval(updateTimer, 1000);
 
 /**
  * Get user's geolocation coordinates.
