@@ -231,84 +231,7 @@ async function initMap() {
 
     const markers = [];
 
-    /*for (const property of properties) {
-        const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
-            map,
-            content: buildContent(property),
-            position: property.position,
-            title: property.description,
-        });
-        markers.push(AdvancedMarkerElement);
-
-        // Here's where you add the script:
-        const contentElement = AdvancedMarkerElement.content;
-        if (contentElement.querySelector('.fa-building')) {
-            contentElement.classList.add('contains-building');
-        }
-
-        // Apply animation to each property marker
-        const content = AdvancedMarkerElement.content;
-        content.style.opacity = "0";
-        content.addEventListener("animationend", (event) => {
-            content.classList.remove("drop");
-            content.style.opacity = "1";
-        });
-        const time = 0 + Math.random(); // Optional: random delay for animation
-        content.style.setProperty("--delay-time", time + "s");
-        intersectionObserver.observe(content);
-
-        AdvancedMarkerElement.addListener("gmp-click", () => {
-            toggleHighlight(AdvancedMarkerElement, property);
-        });
-    }*/
-
     // Function to fetch properties from Firestore and generate markers
-    /*function generateMarkersFromFirestore() {
-        getDocs(collection(db, "properties"))
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const property = doc.data();
-
-                    const firestorePosition = property.position;
-                    const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-                    console.log(position);
-
-                    const AdvancedMarkerElement = new google.maps.marker.AdvancedMarkerElement({
-                        map,
-                        content: buildContent(property),
-                        position: position,
-                        title: property.description,
-                    });
-
-                    markers.push(AdvancedMarkerElement);
-
-                    // Here's where you add the script:
-                    const contentElement = AdvancedMarkerElement.content;
-                    if (contentElement.querySelector('.fa-building')) {
-                        contentElement.classList.add('contains-building');
-                    }
-
-                    // Apply animation to each property marker
-                    const content = AdvancedMarkerElement.content;
-                    content.style.opacity = "0";
-                    content.addEventListener("animationend", (event) => {
-                        content.classList.remove("drop");
-                        content.style.opacity = "1";
-                    });
-                    const time = 0 + Math.random(); // Optional: random delay for animation
-                    content.style.setProperty("--delay-time", time + "s");
-                    intersectionObserver.observe(content);
-
-                    AdvancedMarkerElement.addListener("gmp-click", () => {
-                        toggleHighlight(AdvancedMarkerElement, property);
-                    });
-                });
-            })
-            .catch((error) => {
-                console.error("Error getting documents from Firestore: ", error);
-            });
-    }*/
-
     async function generateMarkersFromFirestore() {
         try {
             const querySnapshot = await getDocs(collection(db, "properties"));
@@ -414,29 +337,6 @@ function buildContent(property) {
     });
     return content;
 }
-
-const properties = [
-    {
-        address: "1 - 25 Bakery Square, Melton 3337",
-        description: "Xplosions Bar & Bowl",
-        points: "100 points",
-        type: "free",
-        position: {
-            lat: -37.68393579760413,
-            lng: 144.58488634379611,
-        },
-    },
-    {
-        address: "190 Duncans Ln, Diggers Rest VIC 3427",
-        description: "Animal Land Childrens Farm",
-        points: "200 points",
-        type: "paid",
-        position: {
-            lat: -37.63041517779664,
-            lng: 144.74600675465328,
-        },
-    },
-];
 
 initMap();
 
