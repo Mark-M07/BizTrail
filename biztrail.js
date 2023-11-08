@@ -268,7 +268,7 @@ async function initMap() {
                 intersectionObserver.observe(content);
 
                 AdvancedMarkerElement.addListener("gmp-click", () => {
-                    toggleHighlight(AdvancedMarkerElement, property);
+                    toggleHighlight(AdvancedMarkerElement);
                 });
             });
         } catch (error) {
