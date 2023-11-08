@@ -215,14 +215,18 @@ async function initMap() {
 
     document.querySelectorAll('.featured').forEach(btn => {
         btn.addEventListener('click', function (e) {
-            const lat = parseFloat(e.currentTarget.getAttribute('data-lat'));
-            const lng = parseFloat(e.currentTarget.getAttribute('data-lng'));
+            //const lat = parseFloat(e.currentTarget.getAttribute('data-lat'));
+            //const lng = parseFloat(e.currentTarget.getAttribute('data-lng'));
             const propertyIndex = parseInt(e.currentTarget.getAttribute('data-id'), 10);
 
-            const newCenter = new LatLng(lat, lng);
-            map.setCenter(newCenter);
+            const marker = markers[propertyIndex];
 
-            toggleHighlight(markers[propertyIndex]);
+            //const newCenter = new LatLng(lat, lng);
+            //map.setCenter(newCenter);
+
+            map.setCenter(marker.position);            
+
+            toggleHighlight(marker);
 
             changeTab('tab2');
         });
