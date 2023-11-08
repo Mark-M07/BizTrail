@@ -302,7 +302,7 @@ function buildContent(property) {
   <div class="icon">
    <i aria-hidden="true" class="fa-solid fa-star"></i>
     </div>
-  <div class="points">${property.points}</div>
+    <div class="points">${property.points} points</div>
     </div>
   <div class="details">
   <div class="details-close">
