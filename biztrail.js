@@ -245,7 +245,7 @@ async function initMap() {
                     map,
                     content: buildContent(property),
                     position: position,
-                    title: property.description,
+                    title: property.title,
                 });
 
                 markers.push(AdvancedMarkerElement);
