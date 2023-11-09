@@ -175,14 +175,14 @@ async function initializeApplication() {
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
     const { LatLng } = await google.maps.importLibrary("core");
-    let userLocation = await getUserLocation();
+    //let userLocation = await getUserLocation();
     let center;
-
-    if (userLocation) {
+    center = new LatLng(-37.24909666554568, 144.45323073712373); // Default center of Kyneton
+    /*if (userLocation) {
         center = new LatLng(userLocation.latitude, userLocation.longitude);
     } else {
         center = new LatLng(-37.69585780409373, 144.55738418426841); // Default center
-    }
+    }*/
     const mapStyles = [
         {
             featureType: 'poi',  // Points of interest
@@ -200,7 +200,7 @@ async function initializeApplication() {
     ];
     const styledMap = new google.maps.StyledMapType(mapStyles, { name: "Styled Map" });
     const map = new Map(document.getElementById("map"), {
-        zoom: 10,
+        zoom: 16,
         center,
         mapId: "4504f8b37365c3d0",
         // Control options
@@ -420,7 +420,7 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-/*const maxPoints = 1000;
+const maxPoints = 1000;
 let currentPoints = 500;
 
 function addPoints(points) {
@@ -437,9 +437,9 @@ function setProgressBarFill(percentage) {
     progressBar.style.width = `${percentage}%`;
 }
 
-addPoints(100);*/
+//addPoints(100);
 
-
+setProgressBarFill(20);
 
 /**
  * Get user's geolocation coordinates.
