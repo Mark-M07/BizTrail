@@ -98,7 +98,7 @@ function updateUserProfile(user) {
 }
 
 // Sign in with Google when the Google login button is clicked
-const googleLoginButton = document.getElementById("google-login-button");
+/*const googleLoginButton = document.getElementById("google-login-button");
 googleLoginButton.addEventListener("click", () => {
     //signInWithPopup(auth, provider)
     signInWithRedirect(auth, provider)
@@ -109,7 +109,26 @@ googleLoginButton.addEventListener("click", () => {
             console.error("Authentication error:", error);
             // Handle Errors here.
         });
-});
+});*/
+
+// Sign in with Google when the Google login button is clicked
+const googleLoginButton1 = document.getElementById("google-login-button-1");
+const googleLoginButton2 = document.getElementById("google-login-button-2");
+
+const googleSignIn = () => {
+    signInWithRedirect(auth, provider)
+        .then((result) => {
+            // The signed-in user info is handled by onAuthStateChanged
+        })
+        .catch((error) => {
+            console.error("Authentication error:", error);
+            // Handle Errors here.
+        });
+};
+
+googleLoginButton1.addEventListener("click", googleSignIn);
+googleLoginButton2.addEventListener("click", googleSignIn);
+
 
 // Logout user when the logout button is clicked
 const logoutButton = document.getElementById("logout-button");
