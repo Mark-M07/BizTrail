@@ -420,7 +420,7 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-const maxPoints = 1000;
+/*const maxPoints = 1000;
 let currentPoints = 500;
 
 function addPoints(points) {
@@ -430,7 +430,7 @@ function addPoints(points) {
         currentPoints = currentPoints % maxPoints;
     }
     setProgressBarFill((currentPoints / maxPoints) * 100);
-}
+}*/
 
 function setProgressBarFill(percentage) {
     const progressBar = document.querySelector('.progress-fill');
