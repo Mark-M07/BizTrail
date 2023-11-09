@@ -200,7 +200,7 @@ async function initializeApplication() {
     ];
     const styledMap = new google.maps.StyledMapType(mapStyles, { name: "Styled Map" });
     const map = new Map(document.getElementById("map"), {
-        zoom: 16,
+        zoom: 14,
         center,
         mapId: "4504f8b37365c3d0",
         // Control options
