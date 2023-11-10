@@ -75,23 +75,14 @@ onAuthStateChanged(auth, async (user) => {
         // Reference to the user's document
         const userDocRef = doc(db, 'users', user.uid);
 
-        // Fetch the user's document data and update the profile
-        try {
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-                updateUserProfile(user, userDocSnap.data());
-            } else {
-                console.log("Document does not exist");
-            }
-        } catch (error) {
-            console.error("Error fetching user document:", error);
-        }
-
-        // Listen to the user's points in Firestore
+        // Listen to changes to the user's document
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 const userData = doc.data();
-                document.getElementById('pointsElement').textContent = userData.points;
+                updateUserProfile(user, userData);
+            } else {
+                console.log("Document does not exist, waiting for creation...");
+                // The document may not exist on first sign-in if the Cloud Function has not yet created it
             }
         });
     } else {
@@ -99,26 +90,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-document.getElementById("add-points").addEventListener("click", () => {
-    // Call the callable function
-    addPoints({ points: 50 }).then((result) => {
-        console.log(result.data);
-    }).catch((error) => {
-        console.error(`Error calling function: ${error.message}`);
-    });
-});
-
 // Update user profile in the UI
 function updateUserProfile(user, userData) {
-    const userName = userData.name;
-    const userEmail = user.email;
-
     // Set default value
     let userProfilePicture = user.photoURL || "https://uploads-ssl.webflow.com/6537355b9fb1ae50f8881dd7/654d54cefa017f6b6ce08c27_facebook.svg";
 
     // Update the UI with user data
-    document.getElementById("userName").textContent = userName;
-    document.getElementById("userEmail").textContent = userEmail;
+    document.getElementById("userEmail").textContent = user.email;
+    document.getElementById("userName").textContent = userData.name;
+    document.getElementById('pointsElement').textContent = userData.points;
 
     const imgElement = document.getElementById("userProfilePicture");
     imgElement.srcset = '';
@@ -190,6 +170,15 @@ logoutButton.addEventListener("click", () => {
         window.location.href = "/";
     }).catch((error) => {
         console.error("Sign out error:", error);
+    });
+});
+
+document.getElementById("add-points").addEventListener("click", () => {
+    // Call the callable function
+    addPoints({ points: 50 }).then((result) => {
+        console.log(result.data);
+    }).catch((error) => {
+        console.error(`Error calling function: ${error.message}`);
     });
 });
 
