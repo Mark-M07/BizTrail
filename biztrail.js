@@ -70,27 +70,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 
 // Listen to authentication state changes
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        updateUserProfile(user);
-
         // Reference to the user's document
         const userDocRef = doc(db, 'users', user.uid);
+
+        // Fetch the user's document data and update the profile
+        try {
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                updateUserProfile(user, userDocSnap.data());
+            } else {
+                console.log("Document does not exist");
+            }
+        } catch (error) {
+            console.error("Error fetching user document:", error);
+        }
 
         // Listen to the user's points in Firestore
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 const userData = doc.data();
-                // Update your text element with the new points
                 document.getElementById('pointsElement').textContent = userData.points;
-            } else {
-                // Handle the case where the user does not exist
-                console.log("Document does not exist");
             }
         });
     } else {
         console.log("User is not signed in");
-        // Optionally, handle the case where the user is not logged in.
     }
 });
 
@@ -104,19 +109,21 @@ document.getElementById("add-points").addEventListener("click", () => {
 });
 
 // Update user profile in the UI
-function updateUserProfile(user) {
-    const userName = user.displayName;
+function updateUserProfile(user, userData) {
+    const userName = userData.name;
     const userEmail = user.email;
-    const userProfilePicture = user.photoURL + "?timestamp=" + new Date().getTime();
 
-    // Clear the srcset attribute to ensure the browser uses the src attribute
-    const imgElement = document.getElementById("userProfilePicture");
-    imgElement.srcset = '';
-    imgElement.sizes = ''; // Also clear sizes if needed
-    imgElement.src = userProfilePicture;
+    // Set default value
+    let userProfilePicture = user.photoURL || "https://uploads-ssl.webflow.com/6537355b9fb1ae50f8881dd7/654d54cefa017f6b6ce08c27_facebook.svg";
 
+    // Update the UI with user data
     document.getElementById("userName").textContent = userName;
     document.getElementById("userEmail").textContent = userEmail;
+
+    const imgElement = document.getElementById("userProfilePicture");
+    imgElement.srcset = '';
+    imgElement.sizes = '';
+    imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
 }
 
 async function emailPasswordSignUp(email, password) {
@@ -171,6 +178,7 @@ const googleSignIn = async () => {
 document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
     button.addEventListener("click", googleSignIn);
 });
+
 
 // Logout user when the logout button is clicked
 const logoutButton = document.getElementById("logout-button");
