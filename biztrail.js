@@ -108,28 +108,37 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(email, password) {
     try {
-        console.log("Test 1");
-        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-        if (signInMethods.length === 0) {
-            console.log("Test 2");
-            // Email not associated with an account, create a new one
-            await createUserWithEmailAndPassword(auth, email, password);
-            // Continue with the new account creation flow...
-            console.log("Test 3");
-        } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
-            // Email already used with Google, prompt linking
-            console.log("Test 4");
-            if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
-                console.log("Test 5");
-                await linkEmailToGoogleAccount(email, password);
-                console.log("Test 6");
-            } else {
-                console.log("Test 7");
-                // Handle case where user chooses not to link accounts
-            }
-        }
+        // Try to create a new account with the provided email and password
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log("Account created successfully");
+        // Continue with the new account creation flow...
     } catch (error) {
-        console.error("Error during email/password sign-up", error);
+        // If the email is already in use, check the sign-in methods associated with it
+        if (error.code === 'auth/email-already-in-use') {
+            console.log("Email already in use. Checking for associated sign-in methods...");
+            handleExistingEmail(email, password);
+        } else {
+            // Handle other errors
+            console.error("Error during email/password sign-up", error);
+        }
+    }
+}
+
+async function handleExistingEmail(email, password) {
+    // Check the sign-in methods associated with the email
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
+        // If the user signed up with Google, prompt them to link their accounts
+        console.log("Email associated with Google account. Prompting account linking...");
+        if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
+            await linkEmailToGoogleAccount(email, password);
+        } else {
+            // User declined to link accounts
+            console.log("User declined to link accounts.");
+        }
+    } else {
+        // Email is used with a different sign-in method
+        console.log("Email used with a different sign-in method.");
     }
 }
 
