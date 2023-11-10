@@ -121,7 +121,7 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(email, password) {
     try {
-        const signInMethods = await firebase.auth().fetchSignInMethodsForEmail(email);
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
         console.log("2 Sign-in methods for this email:", signInMethods);
         //if (signInMethods.length === 0)
         // Try to create a new account with the provided email and password
