@@ -108,16 +108,23 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(email, password) {
     try {
+        console.log("Test 1");
         const signInMethods = await fetchSignInMethodsForEmail(auth, email);
         if (signInMethods.length === 0) {
+            console.log("Test 2");
             // Email not associated with an account, create a new one
             await createUserWithEmailAndPassword(auth, email, password);
             // Continue with the new account creation flow...
+            console.log("Test 3");
         } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
             // Email already used with Google, prompt linking
+            console.log("Test 4");
             if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
+                console.log("Test 5");
                 await linkEmailToGoogleAccount(email, password);
+                console.log("Test 6");
             } else {
+                console.log("Test 7");
                 // Handle case where user chooses not to link accounts
             }
         }
