@@ -127,6 +127,8 @@ async function emailPasswordSignUp(email, password) {
 async function handleExistingEmail(email, password) {
     // Check the sign-in methods associated with the email
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    console.log("Sign-in methods for this email:", signInMethods);
+    
     if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
         // If the user signed up with Google, prompt them to link their accounts
         console.log("Email associated with Google account. Prompting account linking...");
