@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         signupForm.addEventListener('submit', async function (e) {
             e.preventDefault(); // This will prevent the default form submission
 
-            const email = signupForm['email'].value; // Replace 'email' with the actual ID or name of your email input field
-            const password = signupForm['password'].value; // Replace 'password' with the ID or name of your password input field
+            const email = signupForm['signup-email'].value; // Replace 'email' with the actual ID or name of your email input field
+            const password = signupForm['signup-password'].value; // Replace 'password' with the ID or name of your password input field
 
             await emailPasswordSignUp(email, password);
         });
