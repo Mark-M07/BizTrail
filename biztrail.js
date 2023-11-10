@@ -1,10 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import {
     getAuth,
+    linkWithPopup,
     createUserWithEmailAndPassword,
     //signInWithPopup,
     signInWithRedirect,
+    EmailAuthProvider,
     GoogleAuthProvider,
+    getRedirectResult,
     onAuthStateChanged,
     signOut,
     fetchSignInMethodsForEmail
@@ -40,7 +43,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 auth.languageCode = 'en';
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 const functions = getFunctions(app, 'australia-southeast1');
 const addPoints = httpsCallable(functions, 'addPoints');
 
@@ -66,6 +69,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     else {
         console.log("signupForm not found");
     }
+});
+
+linkWithPopup(auth.currentUser, provider).then((result) => {
+    // Accounts successfully linked.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const user = result.user;
+    // ...
+}).catch((error) => {
+    // Handle Errors here.
+    // ...
 });
 
 
@@ -108,6 +121,9 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(email, password) {
     try {
+        const signInMethods = await firebase.auth().fetchSignInMethodsForEmail(email);
+        console.log("2 Sign-in methods for this email:", signInMethods);
+        //if (signInMethods.length === 0)
         // Try to create a new account with the provided email and password
         await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created successfully");
@@ -127,8 +143,8 @@ async function emailPasswordSignUp(email, password) {
 async function handleExistingEmail(email, password) {
     // Check the sign-in methods associated with the email
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    console.log("Sign-in methods for this email:", signInMethods);
-    
+    console.log("1 Sign-in methods for this email:", signInMethods);
+
     if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
         // If the user signed up with Google, prompt them to link their accounts
         console.log("Email associated with Google account. Prompting account linking...");
@@ -153,8 +169,17 @@ async function linkEmailToGoogleAccount(email, password) {
         const emailCredential = EmailAuthProvider.credential(email, password);
         await linkWithCredential(googleUserCredential.user, emailCredential);
 
-        // Handle the success - the email/password is now linked to the Google account
-        console.log("Accounts successfully linked");
+        /*const credential = EmailAuthProvider.credential(email, password);
+
+        const auth = getAuth();
+        linkWithCredential(auth.currentUser, credential)
+            .then((usercred) => {
+                const user = usercred.user;
+                console.log("Account linking success", user);
+            }).catch((error) => {
+                console.log("Account linking error", error);
+            });*/
+
     } catch (error) {
         console.error("Error during account linking", error);
         // Handle errors here, such as user not existing or incorrect password
@@ -164,7 +189,7 @@ async function linkEmailToGoogleAccount(email, password) {
 // Handle Google sign-in for both buttons
 const googleSignIn = async () => {
     try {
-        await signInWithRedirect(auth, provider);
+        await signInWithRedirect(auth, googleProvider);
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
