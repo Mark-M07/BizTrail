@@ -119,7 +119,6 @@ function updateUserProfile(user) {
     document.getElementById("userEmail").textContent = userEmail;
 }
 
-// Example of email/password sign-up
 async function emailPasswordSignUp(email, password) {
     try {
         const signInMethods = await fetchSignInMethodsForEmail(auth, email);
@@ -127,33 +126,51 @@ async function emailPasswordSignUp(email, password) {
             // Email not associated with an account, create a new one
             await createUserWithEmailAndPassword(auth, email, password);
             // Continue with the new account creation flow...
-        } else {
-            console.log("Email already associated with an account");
-            // You can prompt the user to sign in using one of the existing methods
+        } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
+            // Email already used with Google, prompt linking
+            if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
+                await linkEmailToGoogleAccount(email, password);
+            } else {
+                // Handle case where user chooses not to link accounts
+            }
         }
     } catch (error) {
         console.error("Error during email/password sign-up", error);
     }
 }
 
-// Sign in with Google when the Google login button is clicked
-const googleLoginButton1 = document.getElementById("google-login-button-1");
-const googleLoginButton2 = document.getElementById("google-login-button-2");
+async function linkEmailToGoogleAccount(email, password) {
+    try {
+        // Try to sign in the user with their Google account
+        const googleUserCredential = await signInWithPopup(auth, new GoogleAuthProvider());
 
-const googleSignIn = () => {
-    signInWithRedirect(auth, provider)
-        .then((result) => {
-            // The signed-in user info is handled by onAuthStateChanged
-        })
-        .catch((error) => {
-            console.error("Authentication error:", error);
-            // Handle Errors here.
-        });
+        // If sign-in was successful, link the email/password to the Google account
+        const emailCredential = EmailAuthProvider.credential(email, password);
+        await linkWithCredential(googleUserCredential.user, emailCredential);
+
+        // Handle the success - the email/password is now linked to the Google account
+        console.log("Accounts successfully linked");
+    } catch (error) {
+        console.error("Error during account linking", error);
+        // Handle errors here, such as user not existing or incorrect password
+    }
+}
+
+// Handle Google sign-in for both buttons
+const googleSignIn = async () => {
+    try {
+        await signInWithRedirect(auth, provider);
+        // The signed-in user info is handled by onAuthStateChanged
+    } catch (error) {
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+    }
 };
 
-googleLoginButton1.addEventListener("click", googleSignIn);
-googleLoginButton2.addEventListener("click", googleSignIn);
-
+// Add event listeners to both Google login buttons
+document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
+    button.addEventListener("click", googleSignIn);
+});
 
 // Logout user when the logout button is clicked
 const logoutButton = document.getElementById("logout-button");
