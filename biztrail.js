@@ -1,11 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import {
     getAuth,
+    createUserWithEmailAndPassword,
     //signInWithPopup,
     signInWithRedirect,
     GoogleAuthProvider,
     onAuthStateChanged,
-    signOut
+    signOut,
+    fetchSignInMethodsForEmail
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 // Import the Firebase Functions SDK
 import {
@@ -46,6 +48,26 @@ const addPoints = httpsCallable(functions, 'addPoints');
 const db = getFirestore(app);
 
 window.addEventListener('load', initializeApplication);
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Ensure the DOM is fully loaded
+    const signupForm = document.getElementById('signup-form');
+
+    if (signupForm) {
+        signupForm.addEventListener('submit', async function (e) {
+            e.preventDefault(); // This will prevent the default form submission
+
+            const email = signupForm['email'].value; // Replace 'email' with the actual ID or name of your email input field
+            const password = signupForm['password'].value; // Replace 'password' with the ID or name of your password input field
+
+            await emailPasswordSignUp(email, password);
+        });
+    }
+    else {
+        console.log("signupForm not found");
+    }
+});
+
 
 // Listen to authentication state changes
 onAuthStateChanged(auth, (user) => {
@@ -97,19 +119,22 @@ function updateUserProfile(user) {
     document.getElementById("userEmail").textContent = userEmail;
 }
 
-// Sign in with Google when the Google login button is clicked
-/*const googleLoginButton = document.getElementById("google-login-button");
-googleLoginButton.addEventListener("click", () => {
-    //signInWithPopup(auth, provider)
-    signInWithRedirect(auth, provider)
-        .then((result) => {
-            // The signed-in user info is handled by onAuthStateChanged
-        })
-        .catch((error) => {
-            console.error("Authentication error:", error);
-            // Handle Errors here.
-        });
-});*/
+// Example of email/password sign-up
+async function emailPasswordSignUp(email, password) {
+    try {
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        if (signInMethods.length === 0) {
+            // Email not associated with an account, create a new one
+            await createUserWithEmailAndPassword(auth, email, password);
+            // Continue with the new account creation flow...
+        } else {
+            console.log("Email already associated with an account");
+            // You can prompt the user to sign in using one of the existing methods
+        }
+    } catch (error) {
+        console.error("Error during email/password sign-up", error);
+    }
+}
 
 // Sign in with Google when the Google login button is clicked
 const googleLoginButton1 = document.getElementById("google-login-button-1");
