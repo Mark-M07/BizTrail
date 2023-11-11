@@ -5,6 +5,7 @@ import {
     linkWithPopup,
     linkWithCredential,
     createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
     signInWithPopup,
     signInWithRedirect,
     EmailAuthProvider,
@@ -93,6 +94,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const password = signupForm['signup-password'].value; // Replace 'password' with the ID or name of your password input field
 
             await emailPasswordSignUp(email, password);
+        });
+    }
+    else {
+        console.log("signupForm not found");
+    }
+
+    const loginForm = document.getElementById('login-form');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault(); // This will prevent the default form submission
+
+            const email = signupForm['login-email'].value;
+            const password = signupForm['login-password'].value;
+
+            emailSignIn(email, password);
         });
     }
     else {
@@ -226,6 +243,17 @@ async function linkEmailToGoogleAccount(email, password) {
         console.error("Error during account linking", error);
     }
 }*/
+
+// Handle email sign-in
+const emailSignIn = async (email, password) => {
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // The signed-in user info is handled by onAuthStateChanged
+    } catch (error) {
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+    }
+};
 
 // Handle Google sign-in for both buttons
 const googleSignIn = async () => {
