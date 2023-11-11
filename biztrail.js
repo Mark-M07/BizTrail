@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         locationId: "sonderSites",
                         userLat: userLocation.latitude,
                         userLng: userLocation.longitude,
-                        //userAccuracy: userLocation.accuracy
+                        userAccuracy: userLocation.accuracy
                     });
     
                     // Handle the response from your Cloud Function
@@ -671,7 +671,7 @@ async function getUserLocation() {
             return {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
-                //accuracy: position.coords.accuracy // Include accuracy
+                accuracy: position.coords.accuracy // Include accuracy
             };
         } catch (error) {
             console.error("Error obtaining geolocation:", error);
