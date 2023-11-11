@@ -218,16 +218,17 @@ document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
 });
 
 document.getElementById("verify-button").addEventListener("click", () => {
-    sendEmailVerification(auth.currentUser)
-    .then(() => {
-      // Email verification sent
-      console.log("Verification email sent");
-    })
-    .catch((error) => {
-      // Error occurred
-      console.error("Error sending verification email:", error);
-    });
+    verifyEmail(auth.currentUser);
 });
+
+const verifyEmail = async (user) => {
+    try {
+        await sendEmailVerification(user);
+        console.log("Verification email sent");
+    } catch (error) {
+        console.error("Verification email error:", error);
+    }
+};
 
 // Handle email sign-in
 const emailSignIn = async (email, password) => {
