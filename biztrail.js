@@ -116,14 +116,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             emailSignIn(email, password);
         });
         document.getElementById("reset-password").addEventListener("click", () => {
-            const email = loginForm['login-email'].value
-            sendPasswordResetEmail(auth, email)
-                .then(() => {
-                    console.log("Password reset email sent!");
-                })
-                .catch((error) => {
-                    console.error("Error sending password reset", error);
-                });
+            const email = loginForm['login-email'].value;
+            passwordReset(email);
         });
     }
     else {
@@ -237,7 +231,10 @@ async function handleExistingEmail(email, password) {
     if (signInMethods.includes('password')) {
         // If the email is already used with an email/password sign-in method
         console.log("Email already used with an email/password account.");
-        document.getElementById("email-exists").style.display = 'block';
+        const signupMessage = document.getElementById("signup-message");
+        signupMessage.textContent = "An account with this email already exists.";
+        signupMessage.style.backgroundColor = '#ffdede';
+        signupMessage.style.display = 'block';
     } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
         // If the user signed up with Google, prompt them to link their accounts
         console.log("Email associated with Google account. Prompting account linking...");
@@ -255,6 +252,24 @@ async function handleExistingEmail(email, password) {
     }
 }
 
+const passwordReset = async (email) => {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        const loginMessage = document.getElementById("login-message");
+        loginMessage.textContent = "Password reset email sent.";
+        loginMessage.style.backgroundColor = '#deffde';
+        loginMessage.style.display = 'block';
+        // Update UI to inform the user that the email has been sent
+    } catch (error) {
+        console.error("Error sending password reset", error);
+        const loginMessage = document.getElementById("login-message");
+        loginMessage.textContent = "Error sending password reset.";
+        loginMessage.style.backgroundColor = '#ffdede';
+        loginMessage.style.display = 'block';
+        // Update UI to show the error message
+    }
+};
+
 const verifyEmail = async (user) => {
     try {
         await sendEmailVerification(user);
@@ -269,12 +284,19 @@ const verifyEmail = async (user) => {
 // Handle email sign-in
 const emailSignIn = async (email, password) => {
     try {
+        const loginMessage = document.getElementById("login-message");
+        loginMessage.textContent = "Attempting sign in.";
+        loginMessage.style.backgroundColor = '#deffde';
+        loginMessage.style.display = 'block';
         await signInWithEmailAndPassword(auth, email, password);
         document.getElementById("log-in").style.display = 'none';
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
-        document.getElementById("login-failed").style.display = 'block';
+        const loginMessage = document.getElementById("login-message");
+        loginMessage.textContent = "Login Failed. Incorrect Email Address or Password.";
+        loginMessage.style.backgroundColor = '#ffdede';
+        loginMessage.style.display = 'block';
     }
 };
 
