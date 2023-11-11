@@ -253,7 +253,9 @@ const emailSignIn = async (email, password) => {
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
-        // Handle Errors here.
+        //if (error.code === 'auth/wrong-password') {
+            document.getElementById("login-failed").style.display = 'block';
+        //}
     }
 };
 
@@ -263,6 +265,7 @@ const googleSignIn = async () => {
         await signInWithRedirect(auth, googleProvider);
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
+        
         console.error("Authentication error:", error);
         // Handle Errors here.
     }
