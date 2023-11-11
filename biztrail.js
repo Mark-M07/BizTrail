@@ -179,14 +179,17 @@ async function handleExistingEmail(email, password) {
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
     console.log("Sign-in methods for this email:", signInMethods);
 
-    if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
+    if (signInMethods.includes('password')) {
+        // If the email is already used with an email/password sign-in method
+        console.log("Email already used with an email/password account.");
+        document.getElementById("email-exists").style.display = 'block';
+    } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
         // If the user signed up with Google, prompt them to link their accounts
         console.log("Email associated with Google account. Prompting account linking...");
         if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
             sessionStorage.setItem('tempEmail', email);
             sessionStorage.setItem('tempPassword', password);
             googleSignIn();
-            //await linkEmailToGoogleAccount(email, password);
         } else {
             // User declined to link accounts
             console.log("User declined to link accounts.");
