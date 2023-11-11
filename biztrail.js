@@ -152,14 +152,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    document.getElementById("add-points").addEventListener("click", () => {
+    const addPointsButton = document.getElementById('add-points');
+
+    if (addPointsButton) {
+        addPointsButton.addEventListener('click', async function () {
+            try {
+                let userLocation = await getUserLocation();
+                if (userLocation) {
+                    console.log("Sending points data");
+                    const result = await addPoints({
+                        eventName: "businessKyneton",
+                        locationId: "sonderSites",
+                        userLat: userLocation.latitude,
+                        userLng: userLocation.longitude,
+                        userAccuracy: userLocation.accuracy
+                    });
+    
+                    // Handle the response from your Cloud Function
+                    console.log("Points added:", result);
+                } else {
+                    console.log("Unable to retrieve user location");
+                    // Handle the case where user location couldn't be retrieved
+                }
+            } catch (error) {
+                console.error("Error adding points:", error);
+                // Handle any errors that occur during the points addition process
+            }
+        });
+    } else {
+        console.log("addPoints button not found");
+    }
+
+    /*document.getElementById("add-points").addEventListener("click", () => {
         // Call the callable function
         addPoints({ points: 50 }).then((result) => {
             console.log(result.data);
         }).catch((error) => {
             console.error(`Error calling function: ${error.message}`);
         });
-    });
+    });*/
 
     document.querySelectorAll('.tablink').forEach(function (tabButton) {
         tabButton.addEventListener('click', function () {
@@ -572,7 +603,7 @@ function buildContent(property) {
     return content;
 }
 
-/*async function getDistance() {
+async function getDistance() {
   let userLocation = await getUserLocation();
   if (userLocation) {
     var lat = userLocation.latitude;
@@ -583,7 +614,7 @@ function buildContent(property) {
     console.log(distanceInKm);
   }
 }
-getDistance();*/
+//getDistance();
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     var R = 6371; // Radius of the Earth in kilometers
@@ -629,21 +660,27 @@ setProgressBarFill(20);
  */
 async function getUserLocation() {
     if ("geolocation" in navigator) {
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
         try {
             const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    timeout: 10000 // Optional: Set a timeout, e.g., 10 seconds
-                });
+                navigator.geolocation.getCurrentPosition(resolve, reject, options);
             });
             return {
                 latitude: position.coords.latitude,
-                longitude: position.coords.longitude
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy // Include accuracy
             };
         } catch (error) {
             console.error("Error obtaining geolocation:", error);
         }
+    } else {
+        alert("Geolocation not supported by this browser.");
     }
-    alert("Geolocation not supported by this browser.");
     return null;
 }
 
