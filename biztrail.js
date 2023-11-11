@@ -250,12 +250,11 @@ async function linkEmailToGoogleAccount(email, password) {
 const emailSignIn = async (email, password) => {
     try {
         await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("log-in").style.display = 'none';
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
-        //if (error.code === 'auth/wrong-password') {
-            document.getElementById("login-failed").style.display = 'block';
-        //}
+        document.getElementById("login-failed").style.display = 'block';
     }
 };
 
