@@ -51,6 +51,33 @@ const addPoints = httpsCallable(functions, 'addPoints');
 // Initialize Firestore
 const db = getFirestore(app);
 
+// This should be called when the page loads
+getRedirectResult(auth).then(async (result) => {
+    if (result) {
+        // Retrieve stored credentials
+        const email = sessionStorage.getItem('tempEmail');
+        const password = sessionStorage.getItem('tempPassword');
+
+        if (email && password) {
+            // Link the credentials
+            const emailCredential = EmailAuthProvider.credential(email, password);
+            try {
+                await linkWithCredential(result.user, emailCredential);
+                console.log("Account linking success", result.user);
+                // Clear stored credentials
+                sessionStorage.removeItem('tempEmail');
+                sessionStorage.removeItem('tempPassword');
+            } catch (linkError) {
+                console.error("Error during account linking", linkError);
+                sessionStorage.removeItem('tempEmail');
+                sessionStorage.removeItem('tempPassword');
+            }
+        }
+    }
+}).catch((error) => {
+    console.error("Error getting redirect result", error);
+});
+
 window.addEventListener('load', initializeApplication);
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -136,7 +163,10 @@ async function handleExistingEmail(email, password) {
         // If the user signed up with Google, prompt them to link their accounts
         console.log("Email associated with Google account. Prompting account linking...");
         if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
-            await linkEmailToGoogleAccount(email, password);
+            sessionStorage.setItem('tempEmail', email);
+            sessionStorage.setItem('tempPassword', password);
+            googleSignIn();
+            //await linkEmailToGoogleAccount(email, password);
         } else {
             // User declined to link accounts
             console.log("User declined to link accounts.");
