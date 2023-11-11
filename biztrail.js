@@ -147,7 +147,7 @@ async function handleExistingEmail(email, password) {
 }
 
 // This is a test deploy
-async function linkEmailToGoogleAccount(email, password) {
+/*async function linkEmailToGoogleAccount(email, password) {
     try {
         // Try to sign in the user with their Google account
         await signInWithPopup(auth, googleProvider);
@@ -161,6 +161,33 @@ async function linkEmailToGoogleAccount(email, password) {
                 console.log("Account linking success", user);
             }).catch((error) => {
                 console.log("Account linking error", error);
+            });
+    } catch (error) {
+        console.error("Error during account linking", error);
+    }
+}*/
+
+async function linkEmailToGoogleAccount(email, password) {
+    try {
+        // Redirect the user to sign in with Google
+        await signInWithRedirect(auth, googleProvider);
+
+        // After redirect, handle the sign-in result
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    // User signed in with Google, link email/password credential
+                    const emailCredential = EmailAuthProvider.credential(email, password);
+                    return linkWithCredential(result.user, emailCredential);
+                }
+            })
+            .then((linkResult) => {
+                // Account linking successful
+                console.log("Account linking success", linkResult.user);
+            })
+            .catch((error) => {
+                // Handle Errors here.
+                console.error("Error during account linking", error);
             });
     } catch (error) {
         console.error("Error during account linking", error);
