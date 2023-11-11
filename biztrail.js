@@ -13,7 +13,8 @@ import {
     getRedirectResult,
     onAuthStateChanged,
     signOut,
-    fetchSignInMethodsForEmail
+    fetchSignInMethodsForEmail,
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 // Import the Firebase Functions SDK
 import {
@@ -117,6 +118,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     else {
         console.log("loginForm not found");
     }
+
+    document.getElementById("reset-password").addEventListener("click", () => {
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                console.log("Password reset email sent!");
+            })
+            .catch((error) => {
+                console.error("Error sending password reset", error);
+            });
+    });
 });
 
 // Listen to authentication state changes
@@ -267,7 +278,7 @@ const googleSignIn = async () => {
         await signInWithRedirect(auth, googleProvider);
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
-        
+
         console.error("Authentication error:", error);
         // Handle Errors here.
     }
