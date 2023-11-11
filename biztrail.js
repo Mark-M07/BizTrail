@@ -3,6 +3,7 @@ import {
     getAuth,
     linkWithRedirect,
     linkWithPopup,
+    linkWithCredential,
     createUserWithEmailAndPassword,
     signInWithPopup,
     signInWithRedirect,
