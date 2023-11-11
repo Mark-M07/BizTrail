@@ -147,7 +147,7 @@ async function handleExistingEmail(email, password) {
 }
 
 // This is a test deploy
-/*async function linkEmailToGoogleAccount(email, password) {
+async function linkEmailToGoogleAccount(email, password) {
     try {
         // Try to sign in the user with their Google account
         await signInWithPopup(auth, googleProvider);
@@ -165,9 +165,9 @@ async function handleExistingEmail(email, password) {
     } catch (error) {
         console.error("Error during account linking", error);
     }
-}*/
+}
 
-async function linkEmailToGoogleAccount(email, password) {
+/*async function linkEmailToGoogleAccount(email, password) {
     try {
         // Redirect the user to sign in with Google
         await signInWithRedirect(auth, googleProvider);
@@ -192,7 +192,7 @@ async function linkEmailToGoogleAccount(email, password) {
     } catch (error) {
         console.error("Error during account linking", error);
     }
-}
+}*/
 
 // Handle Google sign-in for both buttons
 const googleSignIn = async () => {
