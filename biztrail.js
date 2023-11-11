@@ -114,20 +114,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             emailSignIn(email, password);
         });
+        document.getElementById("reset-password").addEventListener("click", () => {
+            const email = loginForm['login-email'].value
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    console.log("Password reset email sent!");
+                })
+                .catch((error) => {
+                    console.error("Error sending password reset", error);
+                });
+        });
     }
     else {
         console.log("loginForm not found");
     }
-
-    document.getElementById("reset-password").addEventListener("click", () => {
-        sendPasswordResetEmail(auth, email)
-            .then(() => {
-                console.log("Password reset email sent!");
-            })
-            .catch((error) => {
-                console.error("Error sending password reset", error);
-            });
-    });
 });
 
 // Listen to authentication state changes
