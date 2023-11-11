@@ -14,7 +14,8 @@ import {
     onAuthStateChanged,
     signOut,
     fetchSignInMethodsForEmail,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 // Import the Firebase Functions SDK
 import {
@@ -211,54 +212,26 @@ async function handleExistingEmail(email, password) {
     }
 }
 
-// This is a test deploy
-async function linkEmailToGoogleAccount(email, password) {
-    try {
-        // Use the global auth instance
-        //const googleUserCredential = await signInWithPopup(auth, googleProvider);
+// Add event listeners to both Google login buttons
+document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
+    button.addEventListener("click", googleSignIn);
+});
 
-        linkWithRedirect(auth.currentUser, googleProvider)
-            .then(/* ... */)
-            .catch(/* ... */);
+document.getElementById("verify-button").addEventListener("click", () => {
+    sendEmailVerification(auth.currentUser);
+});
 
-        // Create an email/password credential
-        //const emailCredential = EmailAuthProvider.credential(email, password);
-
-        // Link the credential to the user's account
-        //await linkWithCredential(googleUserCredential.user, emailCredential);
-
-        console.log("Account successfully linked with Google");
-    } catch (error) {
-        console.error("Error during account linking", error);
-    }
-}
-
-/*async function linkEmailToGoogleAccount(email, password) {
-    try {
-        // Redirect the user to sign in with Google
-        await signInWithRedirect(auth, googleProvider);
-
-        // After redirect, handle the sign-in result
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    // User signed in with Google, link email/password credential
-                    const emailCredential = EmailAuthProvider.credential(email, password);
-                    return linkWithCredential(result.user, emailCredential);
-                }
-            })
-            .then((linkResult) => {
-                // Account linking successful
-                console.log("Account linking success", linkResult.user);
-            })
-            .catch((error) => {
-                // Handle Errors here.
-                console.error("Error during account linking", error);
-            });
-    } catch (error) {
-        console.error("Error during account linking", error);
-    }
-}*/
+function sendEmailVerification(user) {
+    sendEmailVerification(user)
+      .then(() => {
+        // Email verification sent
+        console.log("Verification email sent");
+      })
+      .catch((error) => {
+        // Error occurred
+        console.error("Error sending verification email:", error);
+      });
+  }
 
 // Handle email sign-in
 const emailSignIn = async (email, password) => {
