@@ -129,6 +129,49 @@ document.addEventListener('DOMContentLoaded', (event) => {
     else {
         console.log("loginForm not found");
     }
+
+    // Add event listeners to both Google login buttons
+    document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
+        button.addEventListener("click", googleSignIn);
+    });
+
+    document.getElementById("verify-button").addEventListener("click", () => {
+        const user = auth.currentUser;
+        if (user) {
+            verifyEmail(user);
+        } else {
+            console.log("No user is signed in.");
+            // Optionally, redirect to login page or show a message
+        }
+    });
+
+    // Logout user when the logout button is clicked
+    const logoutButton = document.getElementById("logout-button");
+    logoutButton.addEventListener("click", () => {
+        signOut(auth).then(() => {
+            // Reload the current URL
+            //window.location.reload();
+            // Redirect to the base domain URL
+            window.location.href = "/";
+        }).catch((error) => {
+            console.error("Sign out error:", error);
+        });
+    });
+
+    document.getElementById("add-points").addEventListener("click", () => {
+        // Call the callable function
+        addPoints({ points: 50 }).then((result) => {
+            console.log(result.data);
+        }).catch((error) => {
+            console.error(`Error calling function: ${error.message}`);
+        });
+    });
+
+    document.querySelectorAll('.tablink').forEach(function (tabButton) {
+        tabButton.addEventListener('click', function () {
+            changeTab(this.getAttribute('data-tab'));
+        });
+    });
 });
 
 // Listen to authentication state changes
@@ -212,21 +255,14 @@ async function handleExistingEmail(email, password) {
     }
 }
 
-// Add event listeners to both Google login buttons
-document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
-    button.addEventListener("click", googleSignIn);
-});
-
-document.getElementById("verify-button").addEventListener("click", () => {
-    verifyEmail(auth.currentUser);
-});
-
 const verifyEmail = async (user) => {
     try {
         await sendEmailVerification(user);
         console.log("Verification email sent");
+        // Update UI to inform the user that the email has been sent
     } catch (error) {
         console.error("Verification email error:", error);
+        // Update UI to show the error message
     }
 };
 
@@ -253,39 +289,6 @@ const googleSignIn = async () => {
         // Handle Errors here.
     }
 };
-
-// Add event listeners to both Google login buttons
-document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
-    button.addEventListener("click", googleSignIn);
-});
-
-// Logout user when the logout button is clicked
-const logoutButton = document.getElementById("logout-button");
-logoutButton.addEventListener("click", () => {
-    signOut(auth).then(() => {
-        // Reload the current URL
-        //window.location.reload();
-        // Redirect to the base domain URL
-        window.location.href = "/";
-    }).catch((error) => {
-        console.error("Sign out error:", error);
-    });
-});
-
-document.getElementById("add-points").addEventListener("click", () => {
-    // Call the callable function
-    addPoints({ points: 50 }).then((result) => {
-        console.log(result.data);
-    }).catch((error) => {
-        console.error(`Error calling function: ${error.message}`);
-    });
-});
-
-document.querySelectorAll('.tablink').forEach(function (tabButton) {
-    tabButton.addEventListener('click', function () {
-        changeTab(this.getAttribute('data-tab'));
-    });
-});
 
 function changeTab(targetTabId) {
     // Deactivate all tabs
