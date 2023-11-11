@@ -149,9 +149,7 @@ async function handleExistingEmail(email, password) {
 async function linkEmailToGoogleAccount(email, password) {
     try {
         // Try to sign in the user with their Google account
-        //const googleUserCredential = await signInWithPopup(auth, new GoogleAuthProvider());
-
-        googleSignIn();
+        await signInWithPopup(auth, googleProvider);
 
         const credential = EmailAuthProvider.credential(email, password);
 
@@ -163,20 +161,6 @@ async function linkEmailToGoogleAccount(email, password) {
             }).catch((error) => {
                 console.log("Account linking error", error);
             });
-
-        /*linkWithPopup(auth.currentUser, new GoogleAuthProvider()).then((result) => {
-            // Accounts successfully linked.
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const user = result.user;
-            // ...
-          }).catch((error) => {
-            // Handle Errors here.
-            // ...
-          });*/
-
-        // If sign-in was successful, link the email/password to the Google account
-        //const emailCredential = EmailAuthProvider.credential(email, password);
-        //await linkWithCredential(googleUserCredential.user, emailCredential);
     } catch (error) {
         console.error("Error during account linking", error);
         // Handle errors here, such as user not existing or incorrect password
