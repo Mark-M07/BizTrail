@@ -88,7 +88,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     if (signupForm) {
         signupForm.addEventListener('submit', async function (e) {
-            e.preventDefault(); // This will prevent the default form submission
+            e.preventDefault(); // Prevent the default form submission
+            e.stopPropagation(); // Stop event propagation
 
             const email = signupForm['signup-email'].value; // Replace 'email' with the actual ID or name of your email input field
             const password = signupForm['signup-password'].value; // Replace 'password' with the ID or name of your password input field
@@ -104,7 +105,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
-            e.preventDefault(); // This will prevent the default form submission
+            e.preventDefault(); // Prevent the default form submission
+            e.stopPropagation(); // Stop event propagation
 
             const email = signupForm['login-email'].value;
             const password = signupForm['login-password'].value;
