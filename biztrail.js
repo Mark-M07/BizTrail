@@ -218,20 +218,16 @@ document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
 });
 
 document.getElementById("verify-button").addEventListener("click", () => {
-    sendEmailVerification(auth.currentUser);
+    sendEmailVerification(auth.currentUser)
+    .then(() => {
+      // Email verification sent
+      console.log("Verification email sent");
+    })
+    .catch((error) => {
+      // Error occurred
+      console.error("Error sending verification email:", error);
+    });
 });
-
-function sendEmailVerification(user) {
-    sendEmailVerification(user)
-      .then(() => {
-        // Email verification sent
-        console.log("Verification email sent");
-      })
-      .catch((error) => {
-        // Error occurred
-        console.error("Error sending verification email:", error);
-      });
-  }
 
 // Handle email sign-in
 const emailSignIn = async (email, password) => {
