@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import {
     getAuth,
+    linkWithRedirect,
     linkWithPopup,
     createUserWithEmailAndPassword,
     signInWithPopup,
@@ -150,13 +151,17 @@ async function handleExistingEmail(email, password) {
 async function linkEmailToGoogleAccount(email, password) {
     try {
         // Use the global auth instance
-        const googleUserCredential = await signInWithPopup(auth, googleProvider);
+        //const googleUserCredential = await signInWithPopup(auth, googleProvider);
+
+        linkWithRedirect(auth.currentUser, googleProvider)
+            .then(/* ... */)
+            .catch(/* ... */);
 
         // Create an email/password credential
-        const emailCredential = EmailAuthProvider.credential(email, password);
+        //const emailCredential = EmailAuthProvider.credential(email, password);
 
         // Link the credential to the user's account
-        await linkWithCredential(googleUserCredential.user, emailCredential);
+        //await linkWithCredential(googleUserCredential.user, emailCredential);
 
         console.log("Account successfully linked with Google");
     } catch (error) {
