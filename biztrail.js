@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
             e.preventDefault(); // Prevent the default form submission
             e.stopPropagation(); // Stop event propagation
 
-            const email = signupForm['login-email'].value;
-            const password = signupForm['login-password'].value;
+            const email = loginForm['login-email'].value;
+            const password = loginForm['login-password'].value;
 
             emailSignIn(email, password);
         });
     }
     else {
-        console.log("signupForm not found");
+        console.log("loginForm not found");
     }
 });
 
