@@ -163,7 +163,6 @@ async function linkEmailToGoogleAccount(email, password) {
             });
     } catch (error) {
         console.error("Error during account linking", error);
-        // Handle errors here, such as user not existing or incorrect password
     }
 }
 
@@ -182,7 +181,6 @@ const googleSignIn = async () => {
 document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
     button.addEventListener("click", googleSignIn);
 });
-
 
 // Logout user when the logout button is clicked
 const logoutButton = document.getElementById("logout-button");
