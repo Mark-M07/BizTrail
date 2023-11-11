@@ -146,6 +146,7 @@ async function handleExistingEmail(email, password) {
     }
 }
 
+// This is a test deploy
 async function linkEmailToGoogleAccount(email, password) {
     try {
         // Try to sign in the user with their Google account
