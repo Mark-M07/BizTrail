@@ -3,7 +3,7 @@ import {
     getAuth,
     linkWithPopup,
     createUserWithEmailAndPassword,
-    //signInWithPopup,
+    signInWithPopup,
     signInWithRedirect,
     EmailAuthProvider,
     GoogleAuthProvider,
@@ -110,9 +110,6 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(email, password) {
     try {
-        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-        console.log("2 Sign-in methods for this email:", signInMethods);
-        //if (signInMethods.length === 0)
         // Try to create a new account with the provided email and password
         await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created successfully");
@@ -132,7 +129,7 @@ async function emailPasswordSignUp(email, password) {
 async function handleExistingEmail(email, password) {
     // Check the sign-in methods associated with the email
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    console.log("1 Sign-in methods for this email:", signInMethods);
+    console.log("Sign-in methods for this email:", signInMethods);
 
     if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
         // If the user signed up with Google, prompt them to link their accounts
@@ -152,7 +149,7 @@ async function handleExistingEmail(email, password) {
 async function linkEmailToGoogleAccount(email, password) {
     try {
         // Try to sign in the user with their Google account
-        const googleUserCredential = await signInWithRedirect(auth, new GoogleAuthProvider());
+        const googleUserCredential = await signInWithPopup(auth, new GoogleAuthProvider());
 
         // If sign-in was successful, link the email/password to the Google account
         const emailCredential = EmailAuthProvider.credential(email, password);
