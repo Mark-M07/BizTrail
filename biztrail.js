@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 let userLocation = await getUserLocation();
                 if (userLocation) {
                     console.log("Sending points data");
+                    console.log(`Lat: ${userLocation.latitude}, Long: ${userLocation.longitude}`);
                     const result = await addPoints({
                         eventName: "businessKyneton",
                         locationId: "sonderSites",
