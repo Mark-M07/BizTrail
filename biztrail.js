@@ -93,10 +93,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             e.preventDefault(); // Prevent the default form submission
             e.stopPropagation(); // Stop event propagation
 
-            const email = signupForm['signup-email'].value; // Replace 'email' with the actual ID or name of your email input field
-            const password = signupForm['signup-password'].value; // Replace 'password' with the ID or name of your password input field
+            const name = signupForm['signup-name'].value;
+            const email = signupForm['signup-email'].value;
+            const password = signupForm['signup-password'].value;
 
-            await emailPasswordSignUp(email, password);
+            await emailPasswordSignUp(name, email, password);
         });
     }
     else {
@@ -245,11 +246,20 @@ function updateUserProfile(user, userData) {
     }
 }
 
-async function emailPasswordSignUp(email, password) {
+async function emailPasswordSignUp(email, password, name) {
     try {
         // Try to create a new account with the provided email and password
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created successfully");
+
+        // Update the user's profile with the provided name
+        if (userCredential.user) {
+            await updateProfile(userCredential.user, {
+                displayName: name
+            });
+            console.log("User profile updated with name");
+        }
+
         // Continue with the new account creation flow...
     } catch (error) {
         // If the email is already in use, check the sign-in methods associated with it
