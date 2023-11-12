@@ -224,17 +224,26 @@ onAuthStateChanged(auth, async (user) => {
 // Update user profile in the UI
 function updateUserProfile(user, userData) {
     // Set default value
-    let userProfilePicture = user.photoURL || "https://uploads-ssl.webflow.com/6537355b9fb1ae50f8881dd7/654d54cefa017f6b6ce08c27_facebook.svg";
+    let userProfilePicture = user.photoURL || "null";
 
     // Update the UI with user data
     document.getElementById("userEmail").textContent = user.email;
     document.getElementById("userName").textContent = userData.name;
     document.getElementById('pointsElement').textContent = userData.points;
-
     const imgElement = document.getElementById("userProfilePicture");
-    imgElement.srcset = '';
-    imgElement.sizes = '';
-    imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
+
+    if (userProfilePicture === "null"){
+        imgElement.style.display = 'none';
+        const letterElement = document.getElementById("userProfileLetter");
+        letterElement.textContent = "M";
+        letterElement.style.display = 'flex';
+    }
+    else {
+
+        imgElement.srcset = '';
+        imgElement.sizes = '';
+        imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
+    }
 }
 
 async function emailPasswordSignUp(email, password) {
