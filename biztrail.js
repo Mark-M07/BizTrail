@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         button.addEventListener("click", googleSignIn);
     });
 
-    document.getElementById("verify-button").addEventListener("click", () => {
+    document.getElementById("verify-email").addEventListener("click", () => {
         const user = auth.currentUser;
         if (user) {
             verifyEmail(user);
@@ -462,8 +462,6 @@ async function initializeApplication() {
             // Initialize the countdown timer
             initializeCountdown(eventData.drawTime);
 
-            document.getElementById('max-points').textContent = eventData.maxPoints;
-
             // More code can go here where we might need eventData
 
             // Generate markers for the event
@@ -634,7 +632,7 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-/*const maxPoints = 1000;
+/*const maxPoints = 2000;
 let currentPoints = 500;
 
 function addPoints(points) {
