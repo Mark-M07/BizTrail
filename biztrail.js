@@ -224,7 +224,7 @@ onAuthStateChanged(auth, async (user) => {
 // Update user profile in the UI
 function updateUserProfile(user, userData) {
     // Set default value
-    let userProfilePicture = user.photoURL || "null";
+    let userProfilePicture = user.photoURL;
 
     // Update the UI with user data
     document.getElementById("userEmail").textContent = user.email;
@@ -232,14 +232,13 @@ function updateUserProfile(user, userData) {
     document.getElementById('pointsElement').textContent = userData.points;
     const imgElement = document.getElementById("userProfilePicture");
 
-    if (userProfilePicture === "null"){
+    if (!userProfilePicture){
         imgElement.style.display = 'none';
         const letterElement = document.getElementById("userProfileLetter");
-        letterElement.textContent = "M";
+        letterElement.textContent = (userData.name.charAt(0)).toUpperCase();
         letterElement.style.display = 'flex';
     }
     else {
-
         imgElement.srcset = '';
         imgElement.sizes = '';
         imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
