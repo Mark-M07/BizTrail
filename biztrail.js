@@ -15,7 +15,8 @@ import {
     signOut,
     fetchSignInMethodsForEmail,
     sendPasswordResetEmail,
-    sendEmailVerification
+    sendEmailVerification,
+    updateProfile
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 // Import the Firebase Functions SDK
 import {
