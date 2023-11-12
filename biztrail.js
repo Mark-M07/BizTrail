@@ -246,7 +246,7 @@ function updateUserProfile(user, userData) {
     }
 }
 
-async function emailPasswordSignUp(email, password, name) {
+async function emailPasswordSignUp(name, email, password) {
     try {
         // Try to create a new account with the provided email and password
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
