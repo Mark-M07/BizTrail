@@ -63,10 +63,12 @@ const intersectionObserver = new IntersectionObserver((entries) => {
 
 document.addEventListener('DOMContentLoaded', (event) => {
     // Ensure the DOM is fully loaded
+    const eventName = document.getElementById('event-name').dataset.eventName;
     const signupForm = document.getElementById('signup-form');
     const loginForm = document.getElementById('login-form');
     const accountForm = document.getElementById('account-form');
     const markers = [];
+    let interval;
 
     initializeApplication();
 
@@ -115,41 +117,67 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Listen to authentication state changes
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            if (user.emailVerified) {
-                document.getElementById("sign-up").style.display = 'none';
-                document.getElementById("log-in").style.display = 'none';
-                document.getElementById("logged-out").style.display = 'none';
-                document.getElementById("logged-in").style.display = 'flex';
+        if (user && user.emailVerified) {
+            // Update UI for logged-in state
+            document.getElementById("sign-up").style.display = 'none';
+            document.getElementById("log-in").style.display = 'none';
+            document.getElementById("logged-out").style.display = 'none';
+            document.getElementById("logged-in").style.display = 'flex';
 
-                // Reference to the user's document
-                const userDocRef = doc(db, 'users', user.uid);
+            // Fetch and handle event-related data
+            try {
+                const eventName = document.getElementById('event-name').dataset.eventName;
+                const eventExists = await fetchEvent(eventName);
 
-                // Listen to changes to the user's document
-                onSnapshot(userDocRef, (doc) => {
-                    if (doc.exists()) {
-                        const userData = doc.data();
-                        updateUserProfileUI(user, userData);
-                    }
-                });
-
-                // Define the event name you want to listen to
-                const eventName = "businessKyneton";
-
-                // Reference to the user's event document
-                const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-
-                // Listen to changes to the user's event document
-                onSnapshot(userEventDocRef, (doc) => {
-                    if (doc.exists()) {
-                        const userEventData = doc.data();
-                        updateUserEventUI(userEventData);
-                        updateVisitedMarkers(userEventData.locations || []);
-                    }
-                });
+                if (eventExists) {
+                    // Fetch initial visited locations and set up real-time updates
+                    await handleUserEventUpdates(user.uid, eventName);
+                }
+            } catch (error) {
+                console.error("Error in fetchEvent or handleUserEventUpdates:", error);
             }
         }
     });
+
+    async function fetchEvent(eventName) {
+        const eventDoc = await getDoc(doc(db, "events", eventName));
+        if (!eventDoc.exists()) {
+            console.log(`${eventName} event document not found!`);
+            return false;
+        }
+
+        const eventData = eventDoc.data();
+        initializeCountdown(eventData.drawTime);
+
+        const locations = await getDocs(collection(db, "events", eventName, "locations"));
+        generateEventMarkers(locations, []);
+        return true;
+    }
+
+    async function handleUserEventUpdates(userId, eventName) {
+        // Reference to the user's event document
+        const userEventDocRef = doc(db, 'users', userId, 'events', eventName);
+
+        // Fetch initial visited locations
+        const visitedLocationsDoc = await getDoc(userEventDocRef);
+        const visitedLocations = visitedLocationsDoc.exists() ? visitedLocationsDoc.data().locations : [];
+        updateVisitedMarkers(visitedLocations);
+
+        // Set up real-time updates
+        onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+                const userData = doc.data();
+                updateUserProfileUI(user, userData);
+            }
+        });
+        onSnapshot(userEventDocRef, (doc) => {
+            if (doc.exists()) {
+                const userEventData = doc.data();
+                updateUserEventUI(userEventData);
+                updateVisitedMarkers(userEventData.locations || []);
+            }
+        });
+    }
 
     // Update user profile in the UI
     function updateUserProfileUI(user, userData) {
@@ -219,7 +247,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 console.log("Sending points data");
                 console.log(`Lat: ${userLocation.latitude}, Long: ${userLocation.longitude}`);
                 const result = await addPoints({
-                    eventName: "businessKyneton",
+                    eventName: eventName,
                     locationId: "sonderSites",
                     userLat: userLocation.latitude,
                     userLng: userLocation.longitude,
@@ -313,6 +341,80 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     let currentlyHighlighted = null;
 
+    function initializeCountdown(drawTime) {
+        const targetDate = drawTime.toDate().getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const timeDifference = targetDate - now;
+
+            if (timeDifference <= 0) {
+                clearInterval(interval);
+                // Perform additional actions if needed when the countdown ends
+                return;
+            }
+
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            // Assuming your spans are in order, we'll update them
+            const spans = document.querySelectorAll('.text-countdown span');
+            spans[0].textContent = Math.floor(days / 10);
+            spans[1].textContent = days % 10;
+            spans[2].textContent = Math.floor(hours / 10);
+            spans[3].textContent = hours % 10;
+            spans[4].textContent = Math.floor(minutes / 10);
+            spans[5].textContent = minutes % 10;
+            spans[6].textContent = Math.floor(seconds / 10);
+            spans[7].textContent = seconds % 10;
+        }
+
+        // Start the timer
+        updateTimer(); // Run it once to avoid initial delay
+        interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
+    }
+
+    function generateEventMarkers(locations, visitedLocations) {
+        locations.forEach((doc) => {
+            const property = doc.data();
+            const firestorePosition = property.position;
+            const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
+            const Marker = new AdvancedMarkerElement({
+                map,
+                content: buildContent(property),
+                position: position,
+                title: property.title,
+            });
+
+            Marker.locationId = doc.id;
+            Marker.propertyData = property;
+            markers.push(Marker);
+
+            // Here's where you add the script:
+            const contentElement = Marker.content;
+            if (contentElement.querySelector('.fa-building')) {
+                contentElement.classList.add('contains-building');
+            }
+
+            // Apply animation to each property marker
+            const content = Marker.content;
+            content.style.opacity = "0";
+            content.addEventListener("animationend", (event) => {
+                content.classList.remove("drop");
+                content.style.opacity = "1";
+            });
+            const time = 0 + Math.random(); // Optional: random delay for animation
+            content.style.setProperty("--delay-time", time + "s");
+            intersectionObserver.observe(content);
+
+            Marker.addListener("gmp-click", () => {
+                toggleHighlight(Marker);
+            });
+        });
+    }
+
     async function initializeApplication() {
         // Request needed libraries.
         const { Map } = await google.maps.importLibrary("maps");
@@ -371,109 +473,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 changeTab('tab2');
             });
         });
-
-
-        let interval;
-        const eventName = document.getElementById('event-name').dataset.eventName;
-        fetchEvent(eventName);
-
-        async function fetchEvent(eventName) {
-            try {
-                // Fetch event document first
-                const eventDoc = await getDoc(doc(db, "events", eventName));
-                if (!eventDoc.exists()) {
-                    console.log(`${eventName} 'event' document found!`);
-                    return;
-                }
-
-                const eventData = eventDoc.data();
-
-                // Initialize the countdown timer
-                initializeCountdown(eventData.drawTime);
-
-                // More code can go here where we might need eventData
-
-                // Generate markers for the event
-                const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                generateEventMarkers(locations);
-            } catch (error) {
-                console.error("Error getting documents from Firestore: ", error);
-            }
-        }
-
-        function initializeCountdown(drawTime) {
-            const targetDate = drawTime.toDate().getTime();
-
-            function updateTimer() {
-                const now = new Date().getTime();
-                const timeDifference = targetDate - now;
-
-                if (timeDifference <= 0) {
-                    clearInterval(interval);
-                    // Perform additional actions if needed when the countdown ends
-                    return;
-                }
-
-                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-                // Assuming your spans are in order, we'll update them
-                const spans = document.querySelectorAll('.text-countdown span');
-                spans[0].textContent = Math.floor(days / 10);
-                spans[1].textContent = days % 10;
-                spans[2].textContent = Math.floor(hours / 10);
-                spans[3].textContent = hours % 10;
-                spans[4].textContent = Math.floor(minutes / 10);
-                spans[5].textContent = minutes % 10;
-                spans[6].textContent = Math.floor(seconds / 10);
-                spans[7].textContent = seconds % 10;
-            }
-
-            // Start the timer
-            updateTimer(); // Run it once to avoid initial delay
-            interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
-        }
-
-        function generateEventMarkers(locations) {
-            locations.forEach((doc) => {
-                const property = doc.data();
-                const firestorePosition = property.position;
-                const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-                const Marker = new AdvancedMarkerElement({
-                    map,
-                    content: buildContent(property),
-                    position: position,
-                    title: property.title,
-                });
-
-                Marker.locationId = doc.id;
-                Marker.propertyData = property;
-                markers.push(Marker);
-
-                // Here's where you add the script:
-                const contentElement = Marker.content;
-                if (contentElement.querySelector('.fa-building')) {
-                    contentElement.classList.add('contains-building');
-                }
-
-                // Apply animation to each property marker
-                const content = Marker.content;
-                content.style.opacity = "0";
-                content.addEventListener("animationend", (event) => {
-                    content.classList.remove("drop");
-                    content.style.opacity = "1";
-                });
-                const time = 0 + Math.random(); // Optional: random delay for animation
-                content.style.setProperty("--delay-time", time + "s");
-                intersectionObserver.observe(content);
-
-                Marker.addListener("gmp-click", () => {
-                    toggleHighlight(Marker);
-                });
-            });
-        }
     }
 
     function toggleHighlight(markerView) {
@@ -498,7 +497,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (contentElement) {
                     // Update the data-type attribute
                     contentElement.setAttribute("data-type", 'visited');
-    
+
                     // Update the icon class
                     const iconElement = contentElement.querySelector('.icon i');
                     if (iconElement) {
