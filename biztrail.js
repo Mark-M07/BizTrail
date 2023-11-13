@@ -202,21 +202,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const name = accountForm['account-name'].value;
         const email = accountForm['account-email'].value;
 
+        const accountMessage = document.getElementById("account-message");
+        accountMessage.style.display = 'block';
         try {
+            accountMessage.textContent = "Attempting to update account details.";
+            accountMessage.style.backgroundColor = '#e0e0e0';
             const result = await updateUserProfile({ name: name, email: email });
             // Handle successful update
             console.log(result.data);
-            const accountMessage = document.getElementById("account-message");
             accountMessage.textContent = "Account details updated.";
             accountMessage.style.backgroundColor = '#deffde';
-            accountMessage.style.display = 'block';
         } catch (error) {
             // Handle errors
             console.error("Error updating profile:", error);
-            const accountMessage = document.getElementById("account-message");
             accountMessage.textContent = "Error updating profile.";
             accountMessage.style.backgroundColor = '#ffdede';
-            accountMessage.style.display = 'block';
         }
     });
 
@@ -321,55 +321,52 @@ async function handleExistingEmail(email, password) {
 }
 
 const passwordReset = async (email) => {
+    const loginMessage = document.getElementById("login-message");
+    loginMessage.style.display = 'block';
     try {
+        loginMessage.textContent = "Sending password reset email.";
+        loginMessage.style.backgroundColor = '#e0e0e0';
         await sendPasswordResetEmail(auth, email);
-        const loginMessage = document.getElementById("login-message");
         loginMessage.textContent = "Password reset email sent.";
         loginMessage.style.backgroundColor = '#deffde';
-        loginMessage.style.display = 'block';
         // Update UI to inform the user that the email has been sent
     } catch (error) {
         console.error("Error sending password reset", error);
-        const loginMessage = document.getElementById("login-message");
         loginMessage.textContent = "Error sending password reset.";
         loginMessage.style.backgroundColor = '#ffdede';
-        loginMessage.style.display = 'block';
         // Update UI to show the error message
     }
 };
 
 const verifyEmail = async (user) => {
+    const accountMessage = document.getElementById("account-message");
+    accountMessage.style.display = 'block';
     try {
+        accountMessage.textContent = "Sending verification email.";
+        accountMessage.style.backgroundColor = '#e0e0e0';
         await sendEmailVerification(user);
-        const accountMessage = document.getElementById("account-message");
         accountMessage.textContent = "Verification email sent.";
         accountMessage.style.backgroundColor = '#deffde';
-        accountMessage.style.display = 'block';
-        // Update UI to inform the user that the email has been sent
     } catch (error) {
         console.error("Verification email error:", error);
-        const accountMessage = document.getElementById("account-message");
         accountMessage.textContent = "Error sending verification email.";
         accountMessage.style.backgroundColor = '#ffdede';
-        accountMessage.style.display = 'block';
     }
 };
 
 // Handle email sign-in
 const emailSignIn = async (email, password) => {
+    const loginMessage = document.getElementById("login-message");
+    loginMessage.style.display = 'block';
     try {
-        const loginMessage = document.getElementById("login-message");
         loginMessage.textContent = "Attempting sign in.";
-        loginMessage.style.backgroundColor = '#deffde';
-        loginMessage.style.display = 'block';
+        loginMessage.style.backgroundColor = '#e0e0e0';
         await signInWithEmailAndPassword(auth, email, password);
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
-        const loginMessage = document.getElementById("login-message");
         loginMessage.textContent = "Login Failed. Incorrect Email Address or Password.";
         loginMessage.style.backgroundColor = '#ffdede';
-        loginMessage.style.display = 'block';
     }
 };
 
