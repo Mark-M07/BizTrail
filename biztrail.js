@@ -113,35 +113,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Listen to authentication state changes
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            document.getElementById("sign-up").style.display = 'none';
-            document.getElementById("log-in").style.display = 'none';
-            document.getElementById("logged-out").style.display = 'none';
-            document.getElementById("logged-in").style.display = 'flex';
-
-            // Reference to the user's document
-            const userDocRef = doc(db, 'users', user.uid);
-
-            // Listen to changes to the user's document
-            onSnapshot(userDocRef, (doc) => {
-                if (doc.exists()) {
-                    const userData = doc.data();
-                    updateUserProfileUI(user, userData);
-                }
-            });
-
-            // Define the event name you want to listen to
-            const eventName = "businessKyneton";
-
-            // Reference to the user's event document
-            const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-
-            // Listen to changes to the user's event document
-            onSnapshot(userEventDocRef, (doc) => {
-                if (doc.exists()) {
-                    const userEventData = doc.data();
-                    updateUserEventUI(userEventData);
-                }
-            });
+            if (user.emailVerified){
+                console.log("Test 1");
+                document.getElementById("sign-up").style.display = 'none';
+                document.getElementById("log-in").style.display = 'none';
+                document.getElementById("logged-out").style.display = 'none';
+                document.getElementById("logged-in").style.display = 'flex';
+    
+                // Reference to the user's document
+                const userDocRef = doc(db, 'users', user.uid);
+    
+                // Listen to changes to the user's document
+                onSnapshot(userDocRef, (doc) => {
+                    if (doc.exists()) {
+                        const userData = doc.data();
+                        updateUserProfileUI(user, userData);
+                    }
+                });
+    
+                // Define the event name you want to listen to
+                const eventName = "businessKyneton";
+    
+                // Reference to the user's event document
+                const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
+    
+                // Listen to changes to the user's event document
+                onSnapshot(userEventDocRef, (doc) => {
+                    if (doc.exists()) {
+                        const userEventData = doc.data();
+                        updateUserEventUI(userEventData);
+                    }
+                });
+            }
+            else {
+                console.log("Test 2");
+                document.getElementById("sign-up").style.display = 'none';
+                document.getElementById("log-in").style.display = 'flex';
+            }
         }
     });
 
