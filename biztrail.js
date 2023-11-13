@@ -70,8 +70,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const markers = [];
     let interval;
 
-    initializeApplication();
-
     signupForm.addEventListener('submit', async function (e) {
         e.preventDefault(); // Prevent the default form submission
         e.stopPropagation(); // Stop event propagation
@@ -150,7 +148,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         initializeCountdown(eventData.drawTime);
 
         const locations = await getDocs(collection(db, "events", eventName, "locations"));
-        generateEventMarkers(locations, []);
+        generateMap(locations, []);
         return true;
     }
 
@@ -376,46 +374,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
     }
 
-    function generateEventMarkers(locations, visitedLocations) {
-        locations.forEach((doc) => {
-            const property = doc.data();
-            const firestorePosition = property.position;
-            const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
-            const Marker = new AdvancedMarkerElement({
-                map,
-                content: buildContent(property),
-                position: position,
-                title: property.title,
-            });
-
-            Marker.locationId = doc.id;
-            Marker.propertyData = property;
-            markers.push(Marker);
-
-            // Here's where you add the script:
-            const contentElement = Marker.content;
-            if (contentElement.querySelector('.fa-building')) {
-                contentElement.classList.add('contains-building');
-            }
-
-            // Apply animation to each property marker
-            const content = Marker.content;
-            content.style.opacity = "0";
-            content.addEventListener("animationend", (event) => {
-                content.classList.remove("drop");
-                content.style.opacity = "1";
-            });
-            const time = 0 + Math.random(); // Optional: random delay for animation
-            content.style.setProperty("--delay-time", time + "s");
-            intersectionObserver.observe(content);
-
-            Marker.addListener("gmp-click", () => {
-                toggleHighlight(Marker);
-            });
-        });
-    }
-
-    async function initializeApplication() {
+    async function generateMap(locations) {
         // Request needed libraries.
         const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -473,38 +432,42 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 changeTab('tab2');
             });
         });
-    }
 
-    function toggleHighlight(markerView) {
-        // If there's a currently highlighted marker, remove its highlight.
-        if (currentlyHighlighted && currentlyHighlighted !== markerView) {
-            currentlyHighlighted.content.classList.remove("highlight");
-            currentlyHighlighted.zIndex = null;
-        }
-        if (markerView !== currentlyHighlighted) {
-            markerView.content.classList.add("highlight");
-            markerView.zIndex = 1;
-            currentlyHighlighted = markerView;
-        }
-    }
+        locations.forEach((doc) => {
+            const property = doc.data();
+            const firestorePosition = property.position;
+            const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
+            const Marker = new AdvancedMarkerElement({
+                map,
+                content: buildContent(property),
+                position: position,
+                title: property.title,
+            });
 
-    function updateVisitedMarkers(visitedLocations) {
-        console.log("Updating visited markers");
-        markers.forEach(marker => {
-            if (visitedLocations.includes(marker.locationId)) {
-                // Update the marker as visited
-                const contentElement = marker.content;
-                if (contentElement) {
-                    // Update the data-type attribute
-                    contentElement.setAttribute("data-type", 'visited');
+            Marker.locationId = doc.id;
+            Marker.propertyData = property;
+            markers.push(Marker);
 
-                    // Update the icon class
-                    const iconElement = contentElement.querySelector('.icon i');
-                    if (iconElement) {
-                        iconElement.className = 'fa-regular fa-circle-check';
-                    }
-                }
+            // Here's where you add the script:
+            const contentElement = Marker.content;
+            if (contentElement.querySelector('.fa-building')) {
+                contentElement.classList.add('contains-building');
             }
+
+            // Apply animation to each property marker
+            const content = Marker.content;
+            content.style.opacity = "0";
+            content.addEventListener("animationend", (event) => {
+                content.classList.remove("drop");
+                content.style.opacity = "1";
+            });
+            const time = 0 + Math.random(); // Optional: random delay for animation
+            content.style.setProperty("--delay-time", time + "s");
+            intersectionObserver.observe(content);
+
+            Marker.addListener("gmp-click", () => {
+                toggleHighlight(Marker);
+            });
         });
     }
 
@@ -553,6 +516,40 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return content;
     }
 });
+
+
+function toggleHighlight(markerView) {
+    // If there's a currently highlighted marker, remove its highlight.
+    if (currentlyHighlighted && currentlyHighlighted !== markerView) {
+        currentlyHighlighted.content.classList.remove("highlight");
+        currentlyHighlighted.zIndex = null;
+    }
+    if (markerView !== currentlyHighlighted) {
+        markerView.content.classList.add("highlight");
+        markerView.zIndex = 1;
+        currentlyHighlighted = markerView;
+    }
+}
+
+function updateVisitedMarkers(visitedLocations) {
+    console.log("Updating visited markers");
+    markers.forEach(marker => {
+        if (visitedLocations.includes(marker.locationId)) {
+            // Update the marker as visited
+            const contentElement = marker.content;
+            if (contentElement) {
+                // Update the data-type attribute
+                contentElement.setAttribute("data-type", 'visited');
+
+                // Update the icon class
+                const iconElement = contentElement.querySelector('.icon i');
+                if (iconElement) {
+                    iconElement.className = 'fa-regular fa-circle-check';
+                }
+            }
+        }
+    });
+}
 
 const passwordReset = async (email) => {
     const loginMessage = document.getElementById("login-message");
