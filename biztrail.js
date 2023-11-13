@@ -49,6 +49,16 @@ const addPoints = httpsCallable(functions, 'addPoints');
 // Initialize Firestore
 const db = getFirestore(app);
 
+// Define the intersectionObserver outside your map initialization
+const intersectionObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("drop");
+            intersectionObserver.unobserve(entry.target);
+        }
+    }
+});
+
 //window.addEventListener('load', initializeApplication);
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -483,7 +493,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         markers.forEach(marker => {
             if (visitedLocations.includes(marker.locationId)) {
                 // Update the marker content for visited location
-                marker.setContent(buildContent(marker.propertyData, true));
+                const newContent = buildContent(marker.propertyData, true);
+                if (marker.content) {
+                    marker.content.innerHTML = newContent.innerHTML;
+                }
             }
         });
     }
@@ -531,16 +544,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             event.stopPropagation();
         });
         return content;
-    }
-});
-
-// Define the intersectionObserver outside your map initialization
-const intersectionObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-        if (entry.isIntersecting) {
-            entry.target.classList.add("drop");
-            intersectionObserver.unobserve(entry.target);
-        }
     }
 });
 
