@@ -227,23 +227,18 @@ onAuthStateChanged(auth, async (user) => {
 
 // Update user profile in the UI
 function updateUserProfileUI(user, userData) {
-    // Set default value
-    let userProfilePicture = user.photoURL;
-
-    console.log(user);
-    console.log(userData);
-
-
     // Update the UI with user data
     document.getElementById("userEmail").textContent = user.email;
-    document.getElementById("userName").textContent = userData.name;
+    document.getElementById("userName").textContent = user.displayName;
     document.getElementById('pointsElement').textContent = userData.points;
     const imgElement = document.getElementById("userProfilePicture");
+
+    const userProfilePicture = user.photoURL;
 
     if (!userProfilePicture) {
         imgElement.style.display = 'none';
         const letterElement = document.getElementById("userProfileLetter");
-        letterElement.textContent = (userData.name.charAt(0)).toUpperCase();
+        letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
         letterElement.style.display = 'flex';
     }
     else {
