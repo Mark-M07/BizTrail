@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             accountMessage.style.backgroundColor = '#ffdede';
         }
     });
-    
+
     document.getElementById("reset-password").addEventListener("click", () => {
         const email = loginForm['login-email'].value;
         passwordReset(email);
@@ -174,29 +174,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
         initializeCountdown(eventData.drawTime);
 
         const locations = await getDocs(collection(db, "events", eventName, "locations"));
-        generateMap(locations, []);
+
+        await generateMap(locations);
+
         return true;
     }
 
+    // Set up real-time updates
     async function handleUserEventUpdates(user, eventName) {
-        // Reference to the user's event document
-        const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-
-        // Fetch initial visited locations
-        const visitedLocationsDoc = await getDoc(userEventDocRef);
-        const visitedLocations = visitedLocationsDoc.exists() ? visitedLocationsDoc.data().locations : [];
-        updateVisitedMarkers(visitedLocations);
-
-        // Reference to the user's document
         const userDocRef = doc(db, 'users', user.uid);
-
-        // Set up real-time updates
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 const userData = doc.data();
                 updateUserProfileUI(user, userData);
             }
         });
+
+        const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
         onSnapshot(userEventDocRef, (doc) => {
             if (doc.exists()) {
                 const userEventData = doc.data();
@@ -531,7 +525,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             currentlyHighlighted = markerView;
         }
     }
-    
+
     function updateVisitedMarkers(visitedLocations) {
         console.log("Updating visited markers");
         markers.forEach(marker => {
@@ -541,7 +535,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (contentElement) {
                     // Update the data-type attribute
                     contentElement.setAttribute("data-type", 'visited');
-    
+
                     // Update the icon class
                     const iconElement = contentElement.querySelector('.icon i');
                     if (iconElement) {
