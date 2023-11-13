@@ -245,6 +245,7 @@ function updateUserProfileUI(user, userData) {
         imgElement.srcset = '';
         imgElement.sizes = '';
         imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
+        imgElement.style.display = 'flex';
     }
 }
 
