@@ -29,7 +29,8 @@ import {
     onSnapshot,
     collection,
     getDoc,
-    getDocs
+    getDocs,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
@@ -51,6 +52,7 @@ const auth = getAuth(app);
 auth.languageCode = 'en';
 const googleProvider = new GoogleAuthProvider();
 const functions = getFunctions(app, 'australia-southeast1');
+const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
 const addPoints = httpsCallable(functions, 'addPoints');
 
 // Initialize Firestore
@@ -170,7 +172,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         userLng: userLocation.longitude,
                         userAccuracy: userLocation.accuracy
                     });
-    
+
                     // Handle the response from your Cloud Function
                     console.log("Points added:", result);
                 } else {
@@ -234,7 +236,7 @@ function updateUserProfile(user, userData) {
     document.getElementById('pointsElement').textContent = userData.points;
     const imgElement = document.getElementById("userProfilePicture");
 
-    if (!userProfilePicture){
+    if (!userProfilePicture) {
         imgElement.style.display = 'none';
         const letterElement = document.getElementById("userProfileLetter");
         letterElement.textContent = (userData.name.charAt(0)).toUpperCase();
@@ -249,17 +251,18 @@ function updateUserProfile(user, userData) {
 
 async function emailPasswordSignUp(name, email, password) {
     try {
-        // Try to create a new account with the provided email and password
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created successfully");
 
-        // Update the user's profile with the provided name
-        if (userCredential.user) {
-            await updateProfile(userCredential.user, {
-                displayName: name
+        updateUserProfile({ name: name, email: email })
+            .then((result) => {
+                // Handle successful update
+                console.log(result.data);
+            })
+            .catch((error) => {
+                // Handle errors
+                console.error("Error updating profile:", error);
             });
-            console.log("User profile updated with name");
-        }
 
         // Continue with the new account creation flow...
     } catch (error) {
@@ -271,6 +274,16 @@ async function emailPasswordSignUp(name, email, password) {
             // Handle other errors
             console.error("Error during email/password sign-up", error);
         }
+    }
+}
+
+async function updateUserDocument(userId, updateData) {
+    const userRef = doc(db, 'users', userId);
+    try {
+        await updateDoc(userRef, updateData);
+        console.log(`Updated user document for UID: ${userId}`);
+    } catch (error) {
+        console.error("Error updating user document:", error);
     }
 }
 
@@ -622,15 +635,15 @@ function buildContent(property) {
 }
 
 async function getDistance() {
-  let userLocation = await getUserLocation();
-  if (userLocation) {
-    var lat = userLocation.latitude;
-    var long = userLocation.longitude;    
-    var destLat = -37.721858214204175;
-    var destLng = 144.67268273280393;    
-    var distanceInKm = getDistanceFromLatLonInKm(lat, long, destLat, destLng);
-    console.log(distanceInKm);
-  }
+    let userLocation = await getUserLocation();
+    if (userLocation) {
+        var lat = userLocation.latitude;
+        var long = userLocation.longitude;
+        var destLat = -37.721858214204175;
+        var destLng = 144.67268273280393;
+        var distanceInKm = getDistanceFromLatLonInKm(lat, long, destLat, destLng);
+        console.log(distanceInKm);
+    }
 }
 //getDistance();
 
