@@ -230,7 +230,8 @@ function updateUserProfileUI(user, userData) {
     // Set default value
     let userProfilePicture = user.photoURL;
 
-    console.log(userData);
+    console.log(`userData: ${userData}`);
+    console.log(`user: ${user}`);
 
     // Update the UI with user data
     document.getElementById("userEmail").textContent = user.email;
