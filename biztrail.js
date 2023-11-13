@@ -214,7 +214,7 @@ onAuthStateChanged(auth, async (user) => {
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
                 const userData = doc.data();
-                updateUserProfile(user, userData);
+                updateUserProfileUI(user, userData);
             } else {
                 console.log("Document does not exist, waiting for creation...");
                 // The document may not exist on first sign-in if the Cloud Function has not yet created it
@@ -226,7 +226,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // Update user profile in the UI
-function updateUserProfile(user, userData) {
+function updateUserProfileUI(user, userData) {
     // Set default value
     let userProfilePicture = user.photoURL;
 
@@ -274,16 +274,6 @@ async function emailPasswordSignUp(name, email, password) {
             // Handle other errors
             console.error("Error during email/password sign-up", error);
         }
-    }
-}
-
-async function updateUserDocument(userId, updateData) {
-    const userRef = doc(db, 'users', userId);
-    try {
-        await updateDoc(userRef, updateData);
-        console.log(`Updated user document for UID: ${userId}`);
-    } catch (error) {
-        console.error("Error updating user document:", error);
     }
 }
 
