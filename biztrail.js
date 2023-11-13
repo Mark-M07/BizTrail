@@ -15,8 +15,7 @@ import {
     signOut,
     fetchSignInMethodsForEmail,
     sendPasswordResetEmail,
-    sendEmailVerification,
-    updateProfile
+    sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
 // Import the Firebase Functions SDK
 import {
@@ -29,8 +28,7 @@ import {
     onSnapshot,
     collection,
     getDoc,
-    getDocs,
-    updateDoc
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
@@ -213,8 +211,10 @@ onAuthStateChanged(auth, async (user) => {
         // Listen to changes to the user's document
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
+                document.getElementById("logged-out").style.display = 'none';
+                document.getElementById("logged-in").style.display = 'flex';
                 const userData = doc.data();
-                updateUserProfileUI(user, userData);
+                updateUserProfileUI(user, userData);                
             } else {
                 console.log("Document does not exist, waiting for creation...");
                 // The document may not exist on first sign-in if the Cloud Function has not yet created it
@@ -232,16 +232,16 @@ function updateUserProfileUI(user, userData) {
     document.getElementById("userName").textContent = user.displayName;
     document.getElementById('pointsElement').textContent = userData.points;
     const imgElement = document.getElementById("userProfilePicture");
-
+    const letterElement = document.getElementById("userProfileLetter");
     const userProfilePicture = user.photoURL;
 
     if (!userProfilePicture) {
         imgElement.style.display = 'none';
-        const letterElement = document.getElementById("userProfileLetter");
         letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
         letterElement.style.display = 'flex';
     }
     else {
+        letterElement.style.display = 'none';
         imgElement.srcset = '';
         imgElement.sizes = '';
         imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
