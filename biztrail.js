@@ -336,11 +336,17 @@ const passwordReset = async (email) => {
 const verifyEmail = async (user) => {
     try {
         await sendEmailVerification(user);
-        console.log("Verification email sent");
+        const accountMessage = document.getElementById("account-message");
+        accountMessage.textContent = "Verification email sent.";
+        accountMessage.style.backgroundColor = '#deffde';
+        accountMessage.style.display = 'block';
         // Update UI to inform the user that the email has been sent
     } catch (error) {
         console.error("Verification email error:", error);
-        // Update UI to show the error message
+        const accountMessage = document.getElementById("account-message");
+        accountMessage.textContent = "Error sending verification email.";
+        accountMessage.style.backgroundColor = '#ffdede';
+        accountMessage.style.display = 'block';
     }
 };
 
