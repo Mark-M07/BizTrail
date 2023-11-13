@@ -173,8 +173,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Update user event in the UI
     function updateUserEventUI(userEventData) {
         // Update the UI with user event data
-        document.getElementById("event-points").style.width = `${(userEventData.points / 2000) * 100}%`;
+        document.getElementById("event-points").textContent = userEventData.points;
         document.getElementById("event-tickets").textContent = userEventData.tickets;
+        document.getElementById("points-remaining").textContent = 2000 = userEventData.points;
+        document.getElementById("progress-bar").style.width = `${(userEventData.points / 2000) * 100}%`;
     }
 
     accountForm.addEventListener('submit', async function (e) {
@@ -229,15 +231,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             // Handle any errors that occur during the points addition process
         }
     });
-
-    /*document.getElementById("add-points").addEventListener("click", () => {
-        // Call the callable function
-        addPoints({ points: 50 }).then((result) => {
-            console.log(result.data);
-        }).catch((error) => {
-            console.error(`Error calling function: ${error.message}`);
-        });
-    });*/
 
     document.querySelectorAll('.tablink').forEach(function (tabButton) {
         tabButton.addEventListener('click', function () {
