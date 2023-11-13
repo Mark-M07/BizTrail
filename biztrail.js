@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const position = new google.maps.LatLng(firestorePosition._lat, firestorePosition._long);
                 const Marker = new AdvancedMarkerElement({
                     map,
-                    content: buildContent(property, false),
+                    content: buildContent(property),
                     position: position,
                     title: property.title,
                 });
@@ -490,26 +490,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updateVisitedMarkers(visitedLocations) {
-        console.log("Test 0");
+        console.log("Updating visited markers");
         markers.forEach(marker => {
-            console.log("Test 1");
             if (visitedLocations.includes(marker.locationId)) {
-                // Update the marker content for visited location
-                console.log("Test 2");
-                const newContent = buildContent(marker.propertyData, true);
-                if (marker.content) {
-                    marker.content.innerHTML = newContent.innerHTML;
-                    console.log("Test 3");
+                // Update the marker as visited
+                const contentElement = marker.content;
+                if (contentElement) {
+                    // Update the data-type attribute
+                    contentElement.setAttribute("data-type", 'visited');
+    
+                    // Update the icon class
+                    const iconElement = contentElement.querySelector('.icon i');
+                    if (iconElement) {
+                        iconElement.className = 'fa-regular fa-circle-check';
+                    }
                 }
             }
         });
     }
 
-    function buildContent(property, isVisited) {
+    function buildContent(property) {
         const content = document.createElement("div");
         content.classList.add("property");
-        content.setAttribute("data-type", isVisited ? 'visited' : property.type);
-        const iconClass = isVisited ? 'fa-circle-check' : 'fa-star';
+        content.setAttribute("data-type", property.type);
+        const iconClass = 'fa-star';
         content.innerHTML = `
       <div class="icon-points-container">
       <div class="icon">
