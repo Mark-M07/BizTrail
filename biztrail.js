@@ -142,10 +142,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const imgElement = document.getElementById("userProfilePicture");
         const letterElement = document.getElementById("userProfileLetter");
         const userProfilePicture = user.photoURL;
+        const displayName = userData.displayName || "";
 
         if (!userProfilePicture) {
             imgElement.style.display = 'none';
-            letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
+            letterElement.textContent = (displayName.charAt(0)).toUpperCase();
             letterElement.style.display = 'flex';
         }
         else {
@@ -156,8 +157,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             imgElement.style.display = 'flex';
         }
 
-        accountForm['account-name'].value = user.displayName;
-        accountForm['account-email'].value = userData.email;
+        accountForm['account-name'].value = displayName;
+        accountForm['account-email'].value = userData.email || "";
 
         //document.getElementById('pointsElement').textContent = userData.points;
     }
