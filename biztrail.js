@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Listen to authentication state changes
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            document.getElementById("log-in").style.display = 'none';
             document.getElementById("logged-out").style.display = 'none';
             document.getElementById("logged-in").style.display = 'flex';
 
