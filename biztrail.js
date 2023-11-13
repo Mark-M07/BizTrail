@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         document.getElementById("account-email").textContent = userData.email || "";
         accountForm['account-name'].value = displayName;
-        accountForm['account-phone'].value = userData.phone;
+        accountForm['account-phone'].value = userData.phone || "";
     }
 
     // Update user event in the UI
@@ -261,7 +261,7 @@ async function emailPasswordSignUp(name, email, password) {
 
             // Update the user profile
             try {
-                const result = await updateUserProfile({ name: name, phone: "e.g 0401 234 567" });
+                const result = await updateUserProfile({ name: name, phone: "" });
                 console.log(result.data);
             } catch (error) {
                 console.error("Error updating profile:", error);
