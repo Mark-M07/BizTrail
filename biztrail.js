@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             });
 
             // Define the event name you want to listen to
-            const eventName = "someEventName"; // Replace with the actual event name
+            const eventName = "businessKyneton";
 
             // Reference to the user's event document
             const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
