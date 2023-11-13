@@ -88,43 +88,33 @@ window.addEventListener('load', initializeApplication);
 document.addEventListener('DOMContentLoaded', (event) => {
     // Ensure the DOM is fully loaded
     const signupForm = document.getElementById('signup-form');
-
-    if (signupForm) {
-        signupForm.addEventListener('submit', async function (e) {
-            e.preventDefault(); // Prevent the default form submission
-            e.stopPropagation(); // Stop event propagation
-
-            const name = signupForm['signup-name'].value;
-            const email = signupForm['signup-email'].value;
-            const password = signupForm['signup-password'].value;
-
-            await emailPasswordSignUp(name, email, password);
-        });
-    }
-    else {
-        console.log("signupForm not found");
-    }
-
     const loginForm = document.getElementById('login-form');
+    const accountForm = document.getElementById('account-form');
 
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function (e) {
-            e.preventDefault(); // Prevent the default form submission
-            e.stopPropagation(); // Stop event propagation
+    signupForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        e.stopPropagation(); // Stop event propagation
 
-            const email = loginForm['login-email'].value;
-            const password = loginForm['login-password'].value;
+        const name = signupForm['signup-name'].value;
+        const email = signupForm['signup-email'].value;
+        const password = signupForm['signup-password'].value;
 
-            emailSignIn(email, password);
-        });
-        document.getElementById("reset-password").addEventListener("click", () => {
-            const email = loginForm['login-email'].value;
-            passwordReset(email);
-        });
-    }
-    else {
-        console.log("loginForm not found");
-    }
+        await emailPasswordSignUp(name, email, password);
+    });
+
+    loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        e.stopPropagation(); // Stop event propagation
+
+        const email = loginForm['login-email'].value;
+        const password = loginForm['login-password'].value;
+
+        emailSignIn(email, password);
+    });
+    document.getElementById("reset-password").addEventListener("click", () => {
+        const email = loginForm['login-email'].value;
+        passwordReset(email);
+    });
 
     // Add event listeners to both Google login buttons
     document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
@@ -154,37 +144,108 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
+    // Listen to authentication state changes
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.getElementById("logged-out").style.display = 'none';
+            document.getElementById("logged-in").style.display = 'flex';
+
+            // Reference to the user's document
+            const userDocRef = doc(db, 'users', user.uid);
+
+            // Listen to changes to the user's document
+            onSnapshot(userDocRef, (doc) => {
+                if (doc.exists()) {
+                    const userData = doc.data();
+                    updateUserProfileUI(user, userData);
+                } else {
+                    console.log("Document does not exist, waiting for creation...");
+                    // The document may not exist on first sign-in if the Cloud Function has not yet created it
+                }
+            });
+        } else {
+            console.log("User is not signed in");
+        }
+    });
+
+    // Update user profile in the UI
+    function updateUserProfileUI(user, userData) {
+        // Update the UI with user data
+        const imgElement = document.getElementById("userProfilePicture");
+        const letterElement = document.getElementById("userProfileLetter");
+        const userProfilePicture = user.photoURL;
+
+        if (!userProfilePicture) {
+            imgElement.style.display = 'none';
+            letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
+            letterElement.style.display = 'flex';
+        }
+        else {
+            letterElement.style.display = 'none';
+            imgElement.srcset = '';
+            imgElement.sizes = '';
+            imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
+            imgElement.style.display = 'flex';
+        }
+
+        accountForm['account-name'].value = user.displayName;
+        accountForm['account-email'].value = user.email;
+
+        //document.getElementById('pointsElement').textContent = userData.points;
+    }
+
+    accountForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        e.stopPropagation(); // Stop event propagation
+
+        const name = accountForm['account-name'].value;
+        const email = accountForm['account-email'].value;
+
+        try {
+            const result = await updateUserProfile({ name: name, email: email });
+            // Handle successful update
+            console.log(result.data);
+            const accountMessage = document.getElementById("account-message");
+            accountMessage.textContent = "Account details updated.";
+            accountMessage.style.backgroundColor = '#deffde';
+            accountMessage.style.display = 'block';
+        } catch (error) {
+            // Handle errors
+            console.error("Error updating profile:", error);
+            const accountMessage = document.getElementById("account-message");
+            accountMessage.textContent = "Error updating profile.";
+            accountMessage.style.backgroundColor = '#ffdede';
+            accountMessage.style.display = 'block';
+        }
+    });
+
     const addPointsButton = document.getElementById('add-points');
 
-    if (addPointsButton) {
-        addPointsButton.addEventListener('click', async function () {
-            try {
-                let userLocation = await getUserLocation();
-                if (userLocation) {
-                    console.log("Sending points data");
-                    console.log(`Lat: ${userLocation.latitude}, Long: ${userLocation.longitude}`);
-                    const result = await addPoints({
-                        eventName: "businessKyneton",
-                        locationId: "sonderSites",
-                        userLat: userLocation.latitude,
-                        userLng: userLocation.longitude,
-                        userAccuracy: userLocation.accuracy
-                    });
+    addPointsButton.addEventListener('click', async function () {
+        try {
+            let userLocation = await getUserLocation();
+            if (userLocation) {
+                console.log("Sending points data");
+                console.log(`Lat: ${userLocation.latitude}, Long: ${userLocation.longitude}`);
+                const result = await addPoints({
+                    eventName: "businessKyneton",
+                    locationId: "sonderSites",
+                    userLat: userLocation.latitude,
+                    userLng: userLocation.longitude,
+                    userAccuracy: userLocation.accuracy
+                });
 
-                    // Handle the response from your Cloud Function
-                    console.log("Points added:", result);
-                } else {
-                    console.log("Unable to retrieve user location");
-                    // Handle the case where user location couldn't be retrieved
-                }
-            } catch (error) {
-                console.error("Error adding points:", error);
-                // Handle any errors that occur during the points addition process
+                // Handle the response from your Cloud Function
+                console.log("Points added:", result);
+            } else {
+                console.log("Unable to retrieve user location");
+                // Handle the case where user location couldn't be retrieved
             }
-        });
-    } else {
-        console.log("addPoints button not found");
-    }
+        } catch (error) {
+            console.error("Error adding points:", error);
+            // Handle any errors that occur during the points addition process
+        }
+    });
 
     /*document.getElementById("add-points").addEventListener("click", () => {
         // Call the callable function
@@ -202,76 +263,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 });
 
-// Listen to authentication state changes
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // Reference to the user's document
-        const userDocRef = doc(db, 'users', user.uid);
-
-        // Listen to changes to the user's document
-        onSnapshot(userDocRef, (doc) => {
-            if (doc.exists()) {
-                document.getElementById("logged-out").style.display = 'none';
-                document.getElementById("logged-in").style.display = 'flex';
-                const userData = doc.data();
-                updateUserProfileUI(user, userData);
-            } else {
-                console.log("Document does not exist, waiting for creation...");
-                // The document may not exist on first sign-in if the Cloud Function has not yet created it
-            }
-        });
-    } else {
-        console.log("User is not signed in");
-    }
-});
-
-// Update user profile in the UI
-function updateUserProfileUI(user, userData) {
-    // Update the UI with user data
-    const imgElement = document.getElementById("userProfilePicture");
-    const letterElement = document.getElementById("userProfileLetter");
-    const userProfilePicture = user.photoURL;
-
-    if (!userProfilePicture) {
-        imgElement.style.display = 'none';
-        letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
-        letterElement.style.display = 'flex';
-    }
-    else {
-        letterElement.style.display = 'none';
-        imgElement.srcset = '';
-        imgElement.sizes = '';
-        imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
-        imgElement.style.display = 'flex';
-    }
-
-    const accountForm = document.getElementById('account-form');
-
-    if (accountForm) {
-        accountForm['account-name'].value = user.displayName;
-        accountForm['account-email'].value = user.email;
-    }
-    else {
-        console.log("accountForm not found");
-    }
-
-    //document.getElementById('pointsElement').textContent = userData.points;
-}
-
 async function emailPasswordSignUp(name, email, password) {
     try {
         await createUserWithEmailAndPassword(auth, email, password);
         console.log("Account created successfully");
 
-        updateUserProfile({ name: name, email: email })
-            .then((result) => {
-                // Handle successful update
-                console.log(result.data);
-            })
-            .catch((error) => {
-                // Handle errors
-                console.error("Error updating profile:", error);
-            });
+        try {
+            const result = await updateUserProfile({ name: name, email: email });
+            // Handle successful update
+            console.log(result.data);
+        } catch (error) {
+            // Handle errors
+            console.error("Error updating profile:", error);
+        }
 
         // Continue with the new account creation flow...
     } catch (error) {
@@ -358,7 +362,6 @@ const emailSignIn = async (email, password) => {
         loginMessage.style.backgroundColor = '#deffde';
         loginMessage.style.display = 'block';
         await signInWithEmailAndPassword(auth, email, password);
-        document.getElementById("log-in").style.display = 'none';
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
         console.error("Authentication error:", error);
