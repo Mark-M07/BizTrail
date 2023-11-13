@@ -1,19 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
 import {
     getAuth,
-    linkWithRedirect,
-    linkWithPopup,
-    linkWithCredential,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signInWithPopup,
     signInWithRedirect,
-    EmailAuthProvider,
     GoogleAuthProvider,
-    getRedirectResult,
     onAuthStateChanged,
     signOut,
-    fetchSignInMethodsForEmail,
     sendPasswordResetEmail,
     sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
@@ -55,33 +48,6 @@ const addPoints = httpsCallable(functions, 'addPoints');
 
 // Initialize Firestore
 const db = getFirestore(app);
-
-// This should be called when the page loads
-getRedirectResult(auth).then(async (result) => {
-    if (result) {
-        // Retrieve stored credentials
-        const email = sessionStorage.getItem('tempEmail');
-        const password = sessionStorage.getItem('tempPassword');
-
-        if (email && password) {
-            // Link the credentials
-            const emailCredential = EmailAuthProvider.credential(email, password);
-            try {
-                await linkWithCredential(result.user, emailCredential);
-                console.log("Account linking success", result.user);
-                // Clear stored credentials
-                sessionStorage.removeItem('tempEmail');
-                sessionStorage.removeItem('tempPassword');
-            } catch (linkError) {
-                console.error("Error during account linking", linkError);
-                sessionStorage.removeItem('tempEmail');
-                sessionStorage.removeItem('tempPassword');
-            }
-        }
-    }
-}).catch((error) => {
-    console.error("Error getting redirect result", error);
-});
 
 window.addEventListener('load', initializeApplication);
 
@@ -178,7 +144,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         if (!userProfilePicture) {
             imgElement.style.display = 'none';
-            letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
+            letterElement.textContent = (userData.displayName.charAt(0)).toUpperCase();
             letterElement.style.display = 'flex';
         }
         else {
@@ -189,8 +155,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             imgElement.style.display = 'flex';
         }
 
-        accountForm['account-name'].value = user.displayName;
-        accountForm['account-email'].value = user.email;
+        accountForm['account-name'].value = userData.displayName;
+        accountForm['account-email'].value = userData.email;
 
         //document.getElementById('pointsElement').textContent = userData.points;
     }
@@ -282,41 +248,14 @@ async function emailPasswordSignUp(name, email, password) {
     } catch (error) {
         // If the email is already in use, check the sign-in methods associated with it
         if (error.code === 'auth/email-already-in-use') {
-            console.log("Email already in use. Checking for associated sign-in methods...");
-            handleExistingEmail(email, password);
+            const signupMessage = document.getElementById("signup-message");
+            signupMessage.textContent = "An account with this email already exists.";
+            signupMessage.style.backgroundColor = '#ffdede';
+            signupMessage.style.display = 'block';
         } else {
             // Handle other errors
             console.error("Error during email/password sign-up", error);
         }
-    }
-}
-
-async function handleExistingEmail(email, password) {
-    // Check the sign-in methods associated with the email
-    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    console.log("Sign-in methods for this email:", signInMethods);
-
-    if (signInMethods.includes('password')) {
-        // If the email is already used with an email/password sign-in method
-        console.log("Email already used with an email/password account.");
-        const signupMessage = document.getElementById("signup-message");
-        signupMessage.textContent = "An account with this email already exists.";
-        signupMessage.style.backgroundColor = '#ffdede';
-        signupMessage.style.display = 'block';
-    } else if (signInMethods.includes(GoogleAuthProvider.PROVIDER_ID)) {
-        // If the user signed up with Google, prompt them to link their accounts
-        console.log("Email associated with Google account. Prompting account linking...");
-        if (confirm("An account with this email already exists. Would you like to link it with your Google account?")) {
-            sessionStorage.setItem('tempEmail', email);
-            sessionStorage.setItem('tempPassword', password);
-            googleSignIn();
-        } else {
-            // User declined to link accounts
-            console.log("User declined to link accounts.");
-        }
-    } else {
-        // Email is used with a different sign-in method
-        console.log("Email used with a different sign-in method.");
     }
 }
 
