@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         // Update the UI with user event data
         document.getElementById("event-points").textContent = userEventData.points;
         document.getElementById("event-tickets").textContent = userEventData.tickets;
-        document.getElementById("points-remaining").textContent = 2000 = userEventData.points;
+        document.getElementById("points-remaining").textContent = (2000 = userEventData.points);
         document.getElementById("progress-bar").style.width = `${(userEventData.points / 2000) * 100}%`;
     }
 
