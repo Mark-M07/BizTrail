@@ -151,14 +151,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             // Fetch and handle event-related data
             try {
                 const eventName = document.getElementById('event-name').dataset.eventName;
-                const eventExists = await fetchEvent(eventName);
+                const eventData = await fetchEvent(eventName);
 
-                if (eventExists) {
-                    // Fetch initial visited locations and set up real-time updates
-                    await handleUserEventUpdates(user, eventName);
+                if (eventData) {
+                    await initializeEvent(user, eventName, eventData);
                 }
             } catch (error) {
-                console.error("Error in fetchEvent or handleUserEventUpdates:", error);
+                console.error("Error initializing event:", error);
             }
         }
     });
@@ -167,21 +166,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const eventDoc = await getDoc(doc(db, "events", eventName));
         if (!eventDoc.exists()) {
             console.log(`${eventName} event document not found!`);
-            return false;
+            return null;
         }
-
-        const eventData = eventDoc.data();
-        initializeCountdown(eventData.drawTime);
-
-        const locations = await getDocs(collection(db, "events", eventName, "locations"));
-
-        await generateMap(locations);
-
-        return true;
+        return eventDoc.data();
     }
 
-    // Set up real-time updates
-    async function handleUserEventUpdates(user, eventName) {
+    async function initializeEvent(user, eventName, eventData) {
+        // Set up real-time updates for user's account data
         const userDocRef = doc(db, 'users', user.uid);
         onSnapshot(userDocRef, (doc) => {
             if (doc.exists()) {
@@ -190,6 +181,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
 
+        // Countdown timer
+        initializeCountdown(eventData.drawTime);
+
+        // Generate map
+        const locations = await getDocs(collection(db, "events", eventName, "locations"));
+        await generateMap(locations);
+
+        // Set up real-time updates for user's event data
         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
         onSnapshot(userEventDocRef, (doc) => {
             if (doc.exists()) {
