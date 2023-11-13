@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Listen to authentication state changes
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            document.getElementById("sign-up").style.display = 'none';
             document.getElementById("log-in").style.display = 'none';
             document.getElementById("logged-out").style.display = 'none';
             document.getElementById("logged-in").style.display = 'flex';
@@ -130,14 +131,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     // The document may not exist on first sign-in if the Cloud Function has not yet created it
                 }
             });
-        } else {
-            console.log("User is not signed in");
         }
     });
 
     // Update user profile in the UI
     function updateUserProfileUI(user, userData) {
-        console.log(user);
         // Update the UI with user data
         const imgElement = document.getElementById("userProfilePicture");
         const letterElement = document.getElementById("userProfileLetter");
