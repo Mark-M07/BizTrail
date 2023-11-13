@@ -261,7 +261,7 @@ async function emailPasswordSignUp(name, email, password) {
 
             // Update the user profile
             try {
-                const result = await updateUserProfile({ name: name, phone: "" });
+                const result = await updateUserProfile({ name: name, phone: "e.g 0401 234 567" });
                 console.log(result.data);
             } catch (error) {
                 console.error("Error updating profile:", error);
