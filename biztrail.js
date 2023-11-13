@@ -113,16 +113,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Listen to authentication state changes
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            if (user.emailVerified){
-                console.log("Test 1");
+            if (user.emailVerified) {
                 document.getElementById("sign-up").style.display = 'none';
                 document.getElementById("log-in").style.display = 'none';
                 document.getElementById("logged-out").style.display = 'none';
                 document.getElementById("logged-in").style.display = 'flex';
-    
+
                 // Reference to the user's document
                 const userDocRef = doc(db, 'users', user.uid);
-    
+
                 // Listen to changes to the user's document
                 onSnapshot(userDocRef, (doc) => {
                     if (doc.exists()) {
@@ -130,13 +129,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         updateUserProfileUI(user, userData);
                     }
                 });
-    
+
                 // Define the event name you want to listen to
                 const eventName = "businessKyneton";
-    
+
                 // Reference to the user's event document
                 const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-    
+
                 // Listen to changes to the user's event document
                 onSnapshot(userEventDocRef, (doc) => {
                     if (doc.exists()) {
@@ -144,11 +143,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         updateUserEventUI(userEventData);
                     }
                 });
-            }
-            else {
-                console.log("Test 2");
-                document.getElementById("sign-up").style.display = 'none';
-                document.getElementById("log-in").style.display = 'flex';
             }
         }
     });
@@ -174,8 +168,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
             imgElement.style.display = 'flex';
         }
 
+        document.getElementById("account-email").textContent = userData.email || "";
         accountForm['account-name'].value = displayName;
-        accountForm['account-email'].value = userData.email || "";
+        accountForm['account-phone'].value = userData.phone;
     }
 
     // Update user event in the UI
@@ -192,14 +187,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         e.stopPropagation(); // Stop event propagation
 
         const name = accountForm['account-name'].value;
-        const email = accountForm['account-email'].value;
+        const phone = accountForm['account-phone'].value;
 
         const accountMessage = document.getElementById("account-message");
         accountMessage.style.display = 'block';
         try {
             accountMessage.textContent = "Attempting to update account details.";
             accountMessage.style.backgroundColor = '#e0e0e0';
-            const result = await updateUserProfile({ name: name, email: email });
+            const result = await updateUserProfile({ name: name, phone: phone });
             // Handle successful update
             console.log(result.data);
             accountMessage.textContent = "Account details updated.";
@@ -250,28 +245,37 @@ document.addEventListener('DOMContentLoaded', (event) => {
 async function emailPasswordSignUp(name, email, password) {
     const signupMessage = document.getElementById("signup-message");
     signupMessage.style.display = 'block';
+
     try {
         signupMessage.textContent = "Attempting to create new account.";
         signupMessage.style.backgroundColor = '#e0e0e0';
-        await createUserWithEmailAndPassword(auth, email, password);
-        signupMessage.textContent = "Account created successfully.";
-        signupMessage.style.backgroundColor = '#deffde';
-        try {
-            const result = await updateUserProfile({ name: name, email: email });
-            // Handle successful update
-            console.log(result.data);
-        } catch (error) {
-            // Handle errors
-            console.error("Error updating profile:", error);
+
+        // Create the user account
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        // Send verification email
+        if (userCredential.user) {
+            await sendEmailVerification(userCredential.user);
+            signupMessage.textContent = "Account created. Verification email sent.";
+            signupMessage.style.backgroundColor = '#deffde';
+
+            // Update the user profile
+            try {
+                const result = await updateUserProfile({ name: name, email: email });
+                console.log(result.data);
+            } catch (error) {
+                console.error("Error updating profile:", error);
+            }
+
+            // Sign out the user
+            await signOut(auth);
         }
     } catch (error) {
-        // If the email is already in use, check the sign-in methods associated with it
         if (error.code === 'auth/email-already-in-use') {
             signupMessage.textContent = "An account with this email already exists.";
             signupMessage.style.backgroundColor = '#ffdede';
         } else {
-            // Handle other errors
-            signupMessage.textContent = error;
+            signupMessage.textContent = error.message;
             signupMessage.style.backgroundColor = '#ffdede';
         }
     }
@@ -313,17 +317,32 @@ const verifyEmail = async (user) => {
 const emailSignIn = async (email, password) => {
     const loginMessage = document.getElementById("login-message");
     loginMessage.style.display = 'block';
+
     try {
         loginMessage.textContent = "Attempting sign in.";
         loginMessage.style.backgroundColor = '#e0e0e0';
-        await signInWithEmailAndPassword(auth, email, password);
-        // The signed-in user info is handled by onAuthStateChanged
+
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (userCredential.user) {
+            if (!userCredential.user.emailVerified) {
+                // Email is not verified
+                await signOut(auth); // Sign out the user
+                loginMessage.textContent = "Please verify your email address to log in.";
+                loginMessage.style.backgroundColor = '#ffdede';
+            } else {
+                // Email is verified, user can proceed
+                loginMessage.textContent = "Sign in successful.";
+                loginMessage.style.backgroundColor = '#deffde';
+                // The signed-in user info is handled by onAuthStateChanged
+            }
+        }
     } catch (error) {
         console.error("Authentication error:", error);
         loginMessage.textContent = "Login Failed. Incorrect Email Address or Password.";
         loginMessage.style.backgroundColor = '#ffdede';
     }
 };
+
 
 // Handle Google sign-in for both buttons
 const googleSignIn = async () => {
