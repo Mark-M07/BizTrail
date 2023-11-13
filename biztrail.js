@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         if (!userProfilePicture) {
             imgElement.style.display = 'none';
-            letterElement.textContent = (userData.displayName.charAt(0)).toUpperCase();
+            letterElement.textContent = (user.displayName.charAt(0)).toUpperCase();
             letterElement.style.display = 'flex';
         }
         else {
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             imgElement.style.display = 'flex';
         }
 
-        accountForm['account-name'].value = userData.displayName;
+        accountForm['account-name'].value = user.displayName;
         accountForm['account-email'].value = userData.email;
 
         //document.getElementById('pointsElement').textContent = userData.points;
