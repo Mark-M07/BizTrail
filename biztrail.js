@@ -126,9 +126,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (doc.exists()) {
                     const userData = doc.data();
                     updateUserProfileUI(user, userData);
-                } else {
-                    console.log("Document does not exist, waiting for creation...");
-                    // The document may not exist on first sign-in if the Cloud Function has not yet created it
+                }
+            });
+
+            // Define the event name you want to listen to
+            const eventName = "someEventName"; // Replace with the actual event name
+
+            // Reference to the user's event document
+            const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
+
+            // Listen to changes to the user's event document
+            onSnapshot(userEventDocRef, (doc) => {
+                if (doc.exists()) {
+                    const userEventData = doc.data();
+                    updateUserEventUI(userEventData);
                 }
             });
         }
@@ -157,8 +168,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         accountForm['account-name'].value = displayName;
         accountForm['account-email'].value = userData.email || "";
+    }
 
-        //document.getElementById('pointsElement').textContent = userData.points;
+    // Update user event in the UI
+    function updateUserEventUI(userEventData) {
+        // Update the UI with user event data
+        document.getElementById("event-points").style.width = `${(userEventData.points / 2000) * 100}%`;
+        document.getElementById("event-tickets").textContent = userEventData.tickets;
     }
 
     accountForm.addEventListener('submit', async function (e) {
@@ -577,55 +593,6 @@ function buildContent(property) {
     });
     return content;
 }
-
-async function getDistance() {
-    let userLocation = await getUserLocation();
-    if (userLocation) {
-        var lat = userLocation.latitude;
-        var long = userLocation.longitude;
-        var destLat = -37.721858214204175;
-        var destLng = 144.67268273280393;
-        var distanceInKm = getDistanceFromLatLonInKm(lat, long, destLat, destLng);
-        console.log(distanceInKm);
-    }
-}
-//getDistance();
-
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    var R = 6371; // Radius of the Earth in kilometers
-    var dLat = deg2rad(lat2 - lat1);
-    var dLon = deg2rad(lon2 - lon1);
-    var a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in kilometers
-    return d;
-}
-
-function deg2rad(deg) {
-    return deg * (Math.PI / 180);
-}
-
-/*const maxPoints = 2000;
-let currentPoints = 500;
-
-function addPoints(points) {
-    currentPoints += points;
-    if (currentPoints >= maxPoints) {
-        console.log("Ticket added!");
-        currentPoints = currentPoints % maxPoints;
-    }
-    setProgressBarFill((currentPoints / maxPoints) * 100);
-}*/
-
-function setProgressBarFill(percentage) {
-    const progressBar = document.querySelector('.progress-fill');
-    progressBar.style.width = `${percentage}%`;
-}
-
-setProgressBarFill(20);
 
 /**
  * Get user's geolocation coordinates.
