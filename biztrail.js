@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Update user profile in the UI
     function updateUserProfileUI(user, userData) {
+        console.log(user);
         // Update the UI with user data
         const imgElement = document.getElementById("userProfilePicture");
         const letterElement = document.getElementById("userProfileLetter");
