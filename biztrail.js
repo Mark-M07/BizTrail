@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         document.getElementById("account-email").textContent = userData.email || "";
         accountForm['account-name'].value = displayName;
-        accountForm['account-phone'].value = userData.phone || "";
+        accountForm['account-phone'].value = userData.phoneNumber || "";
     }
 
     // Update user event in the UI
