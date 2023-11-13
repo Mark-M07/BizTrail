@@ -214,7 +214,7 @@ onAuthStateChanged(auth, async (user) => {
                 document.getElementById("logged-out").style.display = 'none';
                 document.getElementById("logged-in").style.display = 'flex';
                 const userData = doc.data();
-                updateUserProfileUI(user, userData);                
+                updateUserProfileUI(user, userData);
             } else {
                 console.log("Document does not exist, waiting for creation...");
                 // The document may not exist on first sign-in if the Cloud Function has not yet created it
@@ -228,9 +228,6 @@ onAuthStateChanged(auth, async (user) => {
 // Update user profile in the UI
 function updateUserProfileUI(user, userData) {
     // Update the UI with user data
-    document.getElementById("userEmail").textContent = user.email;
-    document.getElementById("userName").textContent = user.displayName;
-    document.getElementById('pointsElement').textContent = userData.points;
     const imgElement = document.getElementById("userProfilePicture");
     const letterElement = document.getElementById("userProfileLetter");
     const userProfilePicture = user.photoURL;
@@ -247,6 +244,18 @@ function updateUserProfileUI(user, userData) {
         imgElement.src = userProfilePicture + "?timestamp=" + new Date().getTime();
         imgElement.style.display = 'flex';
     }
+
+    const accountForm = document.getElementById('account-form');
+
+    if (accountForm) {
+        accountForm['account-name'].value = user.displayName;
+        accountForm['account-email'].value = user.email;
+    }
+    else {
+        console.log("accountForm not found");
+    }
+
+    //document.getElementById('pointsElement').textContent = userData.points;
 }
 
 async function emailPasswordSignUp(name, email, password) {
