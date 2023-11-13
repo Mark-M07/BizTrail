@@ -231,10 +231,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 async function emailPasswordSignUp(name, email, password) {
+    const signupMessage = document.getElementById("signup-message");
+    signupMessage.style.display = 'block';
     try {
+        signupMessage.textContent = "Attempting to create new account.";
+        signupMessage.style.backgroundColor = '#e0e0e0';
         await createUserWithEmailAndPassword(auth, email, password);
-        console.log("Account created successfully");
-
+        signupMessage.textContent = "Account created successfully.";
+        signupMessage.style.backgroundColor = '#deffde';
         try {
             const result = await updateUserProfile({ name: name, email: email });
             // Handle successful update
@@ -243,18 +247,15 @@ async function emailPasswordSignUp(name, email, password) {
             // Handle errors
             console.error("Error updating profile:", error);
         }
-
-        // Continue with the new account creation flow...
     } catch (error) {
         // If the email is already in use, check the sign-in methods associated with it
         if (error.code === 'auth/email-already-in-use') {
-            const signupMessage = document.getElementById("signup-message");
             signupMessage.textContent = "An account with this email already exists.";
             signupMessage.style.backgroundColor = '#ffdede';
-            signupMessage.style.display = 'block';
         } else {
             // Handle other errors
-            console.error("Error during email/password sign-up", error);
+            signupMessage.textContent = error;
+            signupMessage.style.backgroundColor = '#ffdede';
         }
     }
 }
@@ -268,12 +269,10 @@ const passwordReset = async (email) => {
         await sendPasswordResetEmail(auth, email);
         loginMessage.textContent = "Password reset email sent.";
         loginMessage.style.backgroundColor = '#deffde';
-        // Update UI to inform the user that the email has been sent
     } catch (error) {
         console.error("Error sending password reset", error);
         loginMessage.textContent = "Error sending password reset.";
         loginMessage.style.backgroundColor = '#ffdede';
-        // Update UI to show the error message
     }
 };
 
