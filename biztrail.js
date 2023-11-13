@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const accountForm = document.getElementById('account-form');
     const markers = [];
     let interval;
+    let currentlyHighlighted = null;
 
     signupForm.addEventListener('submit', async function (e) {
         e.preventDefault(); // Prevent the default form submission
@@ -337,8 +338,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.querySelector(`.tablink[data-tab="${targetTabId}"]`).classList.add('active-tab');
     }
 
-    let currentlyHighlighted = null;
-
     function initializeCountdown(drawTime) {
         const targetDate = drawTime.toDate().getTime();
 
@@ -515,41 +514,40 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
         return content;
     }
-});
 
-
-function toggleHighlight(markerView) {
-    // If there's a currently highlighted marker, remove its highlight.
-    if (currentlyHighlighted && currentlyHighlighted !== markerView) {
-        currentlyHighlighted.content.classList.remove("highlight");
-        currentlyHighlighted.zIndex = null;
+    function toggleHighlight(markerView) {
+        // If there's a currently highlighted marker, remove its highlight.
+        if (currentlyHighlighted && currentlyHighlighted !== markerView) {
+            currentlyHighlighted.content.classList.remove("highlight");
+            currentlyHighlighted.zIndex = null;
+        }
+        if (markerView !== currentlyHighlighted) {
+            markerView.content.classList.add("highlight");
+            markerView.zIndex = 1;
+            currentlyHighlighted = markerView;
+        }
     }
-    if (markerView !== currentlyHighlighted) {
-        markerView.content.classList.add("highlight");
-        markerView.zIndex = 1;
-        currentlyHighlighted = markerView;
-    }
-}
-
-function updateVisitedMarkers(visitedLocations) {
-    console.log("Updating visited markers");
-    markers.forEach(marker => {
-        if (visitedLocations.includes(marker.locationId)) {
-            // Update the marker as visited
-            const contentElement = marker.content;
-            if (contentElement) {
-                // Update the data-type attribute
-                contentElement.setAttribute("data-type", 'visited');
-
-                // Update the icon class
-                const iconElement = contentElement.querySelector('.icon i');
-                if (iconElement) {
-                    iconElement.className = 'fa-regular fa-circle-check';
+    
+    function updateVisitedMarkers(visitedLocations) {
+        console.log("Updating visited markers");
+        markers.forEach(marker => {
+            if (visitedLocations.includes(marker.locationId)) {
+                // Update the marker as visited
+                const contentElement = marker.content;
+                if (contentElement) {
+                    // Update the data-type attribute
+                    contentElement.setAttribute("data-type", 'visited');
+    
+                    // Update the icon class
+                    const iconElement = contentElement.querySelector('.icon i');
+                    if (iconElement) {
+                        iconElement.className = 'fa-regular fa-circle-check';
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
+});
 
 const passwordReset = async (email) => {
     const loginMessage = document.getElementById("login-message");
