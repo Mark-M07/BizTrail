@@ -87,16 +87,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         button.addEventListener("click", googleSignIn);
     });
 
-    document.getElementById("verify-email").addEventListener("click", () => {
-        const user = auth.currentUser;
-        if (user) {
-            verifyEmail(user);
-        } else {
-            console.log("No user is signed in.");
-            // Optionally, redirect to login page or show a message
-        }
-    });
-
     // Logout user when the logout button is clicked
     const logoutButton = document.getElementById("logout-button");
     logoutButton.addEventListener("click", () => {
@@ -294,22 +284,6 @@ const passwordReset = async (email) => {
         console.error("Error sending password reset", error);
         loginMessage.textContent = "Error sending password reset.";
         loginMessage.style.backgroundColor = '#ffdede';
-    }
-};
-
-const verifyEmail = async (user) => {
-    const accountMessage = document.getElementById("account-message");
-    accountMessage.style.display = 'block';
-    try {
-        accountMessage.textContent = "Sending verification email.";
-        accountMessage.style.backgroundColor = '#e0e0e0';
-        await sendEmailVerification(user);
-        accountMessage.textContent = "Verification email sent.";
-        accountMessage.style.backgroundColor = '#deffde';
-    } catch (error) {
-        console.error("Verification email error:", error);
-        accountMessage.textContent = "Error sending verification email.";
-        accountMessage.style.backgroundColor = '#ffdede';
     }
 };
 
