@@ -237,20 +237,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
     async function emailPasswordSignUp(name, email, password) {
         const signupMessage = document.getElementById("signup-message");
         signupMessage.style.display = 'block';
-    
+
         try {
             signupMessage.textContent = "Attempting to create new account.";
             signupMessage.style.backgroundColor = '#e0e0e0';
-    
+
             // Create the user account
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
+
             // Send verification email
             if (userCredential.user) {
                 await sendEmailVerification(userCredential.user);
                 signupMessage.textContent = "Account created. Verification email sent.";
                 signupMessage.style.backgroundColor = '#deffde';
-    
+
                 // Update the user profile
                 try {
                     const result = await updateUserProfile({ name: name, phone: "" });
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 } catch (error) {
                     console.error("Error updating profile:", error);
                 }
-    
+
                 // Sign out the user
                 await signOut(auth);
             }
@@ -272,66 +272,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         }
     }
-    
-    const passwordReset = async (email) => {
-        const loginMessage = document.getElementById("login-message");
-        loginMessage.style.display = 'block';
-        try {
-            loginMessage.textContent = "Sending password reset email.";
-            loginMessage.style.backgroundColor = '#e0e0e0';
-            await sendPasswordResetEmail(auth, email);
-            loginMessage.textContent = "Password reset email sent.";
-            loginMessage.style.backgroundColor = '#deffde';
-        } catch (error) {
-            console.error("Error sending password reset", error);
-            loginMessage.textContent = "Error sending password reset.";
-            loginMessage.style.backgroundColor = '#ffdede';
-        }
-    };
-    
-    // Handle email sign-in
-    const emailSignIn = async (email, password) => {
-        const loginMessage = document.getElementById("login-message");
-        loginMessage.style.display = 'block';
-    
-        try {
-            loginMessage.textContent = "Attempting sign in.";
-            loginMessage.style.backgroundColor = '#e0e0e0';
-    
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            if (userCredential.user) {
-                if (!userCredential.user.emailVerified) {
-                    // Email is not verified
-                    await signOut(auth); // Sign out the user
-                    loginMessage.textContent = "Please verify your email address to log in.";
-                    loginMessage.style.backgroundColor = '#ffdede';
-                } else {
-                    // Email is verified, user can proceed
-                    loginMessage.textContent = "Sign in successful.";
-                    loginMessage.style.backgroundColor = '#deffde';
-                    // The signed-in user info is handled by onAuthStateChanged
-                }
-            }
-        } catch (error) {
-            console.error("Authentication error:", error);
-            loginMessage.textContent = "Login Failed. Incorrect Email Address or Password.";
-            loginMessage.style.backgroundColor = '#ffdede';
-        }
-    };
-    
-    
-    // Handle Google sign-in for both buttons
-    const googleSignIn = async () => {
-        try {
-            await signInWithRedirect(auth, googleProvider);
-            // The signed-in user info is handled by onAuthStateChanged
-        } catch (error) {
-    
-            console.error("Authentication error:", error);
-            // Handle Errors here.
-        }
-    };
-    
+
     function changeTab(targetTabId) {
         // Deactivate all tabs
         document.querySelectorAll(".tabcontent").forEach(function (tab) {
@@ -341,37 +282,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.querySelectorAll('.tablink').forEach(function (btn) {
             btn.classList.remove('active-tab');
         });
-    
+
         if (targetTabId === "tab3") {
             startScanning();
         }
         else if (isScannerActive) {
             stopScanning();
         }
-    
+
         // Activate the target tab's content
         const targetTab = document.getElementById(targetTabId);
         targetTab.style.display = 'block';  // Set display to block
         setTimeout(() => {
             targetTab.classList.add('active-tab'); // This will trigger the opacity transition
         }, 10); // Small delay to ensure the block display has rendered in the browser
-    
+
         // Find the associated button for the tab and mark it as active
         document.querySelector(`.tablink[data-tab="${targetTabId}"]`).classList.add('active-tab');
     }
-    
-    // Define the intersectionObserver outside your map initialization
-    const intersectionObserver = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("drop");
-                intersectionObserver.unobserve(entry.target);
-            }
-        }
-    });
-    
+
     let currentlyHighlighted = null;
-    
+
     async function initializeApplication() {
         // Request needed libraries.
         const { Map } = await google.maps.importLibrary("maps");
@@ -413,29 +344,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
             rotateControl: false, // hides the rotate control
             fullscreenControl: false // hides the fullscreen control
         });
-    
+
         map.mapTypes.set('styled_map', styledMap);
         map.setMapTypeId('styled_map');
-    
+
         document.querySelectorAll('.featured').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 const propertyIndex = parseInt(e.currentTarget.getAttribute('data-id'), 10);
-    
+
                 const marker = markers[propertyIndex];
-    
+
                 map.setCenter(marker.position);
-    
+
                 toggleHighlight(marker);
-    
+
                 changeTab('tab2');
             });
         });
-    
+
 
         let interval;
         const eventName = document.getElementById('event-name').dataset.eventName;
         fetchEvent(eventName);
-    
+
         async function fetchEvent(eventName) {
             try {
                 // Fetch event document first
@@ -444,14 +375,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     console.log(`${eventName} 'event' document found!`);
                     return;
                 }
-    
+
                 const eventData = eventDoc.data();
-    
+
                 // Initialize the countdown timer
                 initializeCountdown(eventData.drawTime);
-    
+
                 // More code can go here where we might need eventData
-    
+
                 // Generate markers for the event
                 const locations = await getDocs(collection(db, "events", eventName, "locations"));
                 generateEventMarkers(locations);
@@ -459,25 +390,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 console.error("Error getting documents from Firestore: ", error);
             }
         }
-    
+
         function initializeCountdown(drawTime) {
             const targetDate = drawTime.toDate().getTime();
-    
+
             function updateTimer() {
                 const now = new Date().getTime();
                 const timeDifference = targetDate - now;
-    
+
                 if (timeDifference <= 0) {
                     clearInterval(interval);
                     // Perform additional actions if needed when the countdown ends
                     return;
                 }
-    
+
                 const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-    
+
                 // Assuming your spans are in order, we'll update them
                 const spans = document.querySelectorAll('.text-countdown span');
                 spans[0].textContent = Math.floor(days / 10);
@@ -489,12 +420,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 spans[6].textContent = Math.floor(seconds / 10);
                 spans[7].textContent = seconds % 10;
             }
-    
+
             // Start the timer
             updateTimer(); // Run it once to avoid initial delay
             interval = setInterval(updateTimer, 1000); // Now interval is correctly scoped
         }
-    
+
         function generateEventMarkers(locations) {
             locations.forEach((doc) => {
                 const property = doc.data();
@@ -506,17 +437,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     position: position,
                     title: property.title,
                 });
-    
+
                 Marker.locationId = doc.id;
                 Marker.propertyData = property;
                 markers.push(Marker);
-    
+
                 // Here's where you add the script:
                 const contentElement = Marker.content;
                 if (contentElement.querySelector('.fa-building')) {
                     contentElement.classList.add('contains-building');
                 }
-    
+
                 // Apply animation to each property marker
                 const content = Marker.content;
                 content.style.opacity = "0";
@@ -527,14 +458,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const time = 0 + Math.random(); // Optional: random delay for animation
                 content.style.setProperty("--delay-time", time + "s");
                 intersectionObserver.observe(content);
-    
+
                 Marker.addListener("gmp-click", () => {
                     toggleHighlight(Marker);
                 });
             });
         }
     }
-    
+
     function toggleHighlight(markerView) {
         // If there's a currently highlighted marker, remove its highlight.
         if (currentlyHighlighted && currentlyHighlighted !== markerView) {
@@ -556,7 +487,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
     }
-    
+
     function buildContent(property, isVisited) {
         const content = document.createElement("div");
         content.classList.add("property");
@@ -602,6 +533,75 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return content;
     }
 });
+
+// Define the intersectionObserver outside your map initialization
+const intersectionObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("drop");
+            intersectionObserver.unobserve(entry.target);
+        }
+    }
+});
+
+const passwordReset = async (email) => {
+    const loginMessage = document.getElementById("login-message");
+    loginMessage.style.display = 'block';
+    try {
+        loginMessage.textContent = "Sending password reset email.";
+        loginMessage.style.backgroundColor = '#e0e0e0';
+        await sendPasswordResetEmail(auth, email);
+        loginMessage.textContent = "Password reset email sent.";
+        loginMessage.style.backgroundColor = '#deffde';
+    } catch (error) {
+        console.error("Error sending password reset", error);
+        loginMessage.textContent = "Error sending password reset.";
+        loginMessage.style.backgroundColor = '#ffdede';
+    }
+};
+
+// Handle email sign-in
+const emailSignIn = async (email, password) => {
+    const loginMessage = document.getElementById("login-message");
+    loginMessage.style.display = 'block';
+
+    try {
+        loginMessage.textContent = "Attempting sign in.";
+        loginMessage.style.backgroundColor = '#e0e0e0';
+
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (userCredential.user) {
+            if (!userCredential.user.emailVerified) {
+                // Email is not verified
+                await signOut(auth); // Sign out the user
+                loginMessage.textContent = "Please verify your email address to log in.";
+                loginMessage.style.backgroundColor = '#ffdede';
+            } else {
+                // Email is verified, user can proceed
+                loginMessage.textContent = "Sign in successful.";
+                loginMessage.style.backgroundColor = '#deffde';
+                // The signed-in user info is handled by onAuthStateChanged
+            }
+        }
+    } catch (error) {
+        console.error("Authentication error:", error);
+        loginMessage.textContent = "Login Failed. Incorrect Email Address or Password.";
+        loginMessage.style.backgroundColor = '#ffdede';
+    }
+};
+
+
+// Handle Google sign-in for both buttons
+const googleSignIn = async () => {
+    try {
+        await signInWithRedirect(auth, googleProvider);
+        // The signed-in user info is handled by onAuthStateChanged
+    } catch (error) {
+
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+    }
+};
 
 /**
  * Get user's geolocation coordinates.
