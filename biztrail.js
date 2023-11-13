@@ -490,12 +490,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updateVisitedMarkers(visitedLocations) {
+        console.log("Test 0");
         markers.forEach(marker => {
+            console.log("Test 1");
             if (visitedLocations.includes(marker.locationId)) {
                 // Update the marker content for visited location
+                console.log("Test 2");
                 const newContent = buildContent(marker.propertyData, true);
                 if (marker.content) {
                     marker.content.innerHTML = newContent.innerHTML;
+                    console.log("Test 3");
                 }
             }
         });
