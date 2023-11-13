@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function buildContent(property, isVisited) {
         const content = document.createElement("div");
         content.classList.add("property");
-        content.setAttribute("data-type", property.type);
+        content.setAttribute("data-type", isVisited ? 'visited' : property.type);
         const iconClass = isVisited ? 'fa-circle-check' : 'fa-star';
         content.innerHTML = `
       <div class="icon-points-container">
