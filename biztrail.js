@@ -91,6 +91,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         emailSignIn(email, password);
     });
+
+    accountForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        e.stopPropagation(); // Stop event propagation
+
+        const name = accountForm['account-name'].value;
+        const phone = accountForm['account-phone'].value;
+
+        const accountMessage = document.getElementById("account-message");
+        accountMessage.style.display = 'block';
+        try {
+            accountMessage.textContent = "Attempting to update account details.";
+            accountMessage.style.backgroundColor = '#e0e0e0';
+            await updateUserProfile({ name: name, phone: phone });
+            // Handle successful update
+            accountMessage.textContent = "Account details updated.";
+            accountMessage.style.backgroundColor = '#deffde';
+        } catch (error) {
+            // Handle errors
+            console.error("Error updating profile:", error);
+            accountMessage.textContent = "Error updating profile.";
+            accountMessage.style.backgroundColor = '#ffdede';
+        }
+    });
+    
     document.getElementById("reset-password").addEventListener("click", () => {
         const email = loginForm['login-email'].value;
         passwordReset(email);
@@ -130,7 +155,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 if (eventExists) {
                     // Fetch initial visited locations and set up real-time updates
-                    await handleUserEventUpdates(user.uid, eventName);
+                    await handleUserEventUpdates(user, eventName);
                 }
             } catch (error) {
                 console.error("Error in fetchEvent or handleUserEventUpdates:", error);
@@ -153,14 +178,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return true;
     }
 
-    async function handleUserEventUpdates(userId, eventName) {
+    async function handleUserEventUpdates(user, eventName) {
         // Reference to the user's event document
-        const userEventDocRef = doc(db, 'users', userId, 'events', eventName);
+        const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
 
         // Fetch initial visited locations
         const visitedLocationsDoc = await getDoc(userEventDocRef);
         const visitedLocations = visitedLocationsDoc.exists() ? visitedLocationsDoc.data().locations : [];
         updateVisitedMarkers(visitedLocations);
+
+        // Reference to the user's document
+        const userDocRef = doc(db, 'users', user.uid);
 
         // Set up real-time updates
         onSnapshot(userDocRef, (doc) => {
@@ -212,30 +240,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById("points-remaining").textContent = 2000 - userEventData.points;
         document.getElementById("progress-fill").style.width = `${(userEventData.points / 2000) * 100}%`;
     }
-
-    accountForm.addEventListener('submit', async function (e) {
-        e.preventDefault(); // Prevent the default form submission
-        e.stopPropagation(); // Stop event propagation
-
-        const name = accountForm['account-name'].value;
-        const phone = accountForm['account-phone'].value;
-
-        const accountMessage = document.getElementById("account-message");
-        accountMessage.style.display = 'block';
-        try {
-            accountMessage.textContent = "Attempting to update account details.";
-            accountMessage.style.backgroundColor = '#e0e0e0';
-            await updateUserProfile({ name: name, phone: phone });
-            // Handle successful update
-            accountMessage.textContent = "Account details updated.";
-            accountMessage.style.backgroundColor = '#deffde';
-        } catch (error) {
-            // Handle errors
-            console.error("Error updating profile:", error);
-            accountMessage.textContent = "Error updating profile.";
-            accountMessage.style.backgroundColor = '#ffdede';
-        }
-    });
 
     const addPointsButton = document.getElementById('add-points');
 
