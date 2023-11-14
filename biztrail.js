@@ -139,28 +139,37 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    // Listen to authentication state changes
-    onAuthStateChanged(auth, async (user) => {
-        if (user && user.emailVerified) {
-            // Update UI for logged-in state
-            document.getElementById("sign-up").style.display = 'none';
-            document.getElementById("log-in").style.display = 'none';
-            document.getElementById("logged-out").style.display = 'none';
-            document.getElementById("logged-in").style.display = 'flex';
+    async function initializeApplication() {
+        // Fetch and handle event-related data
+        try {
+            const eventName = document.getElementById('event-name').dataset.eventName;
+            const eventData = await fetchEvent(eventName);
 
-            // Fetch and handle event-related data
-            try {
-                const eventName = document.getElementById('event-name').dataset.eventName;
-                const eventData = await fetchEvent(eventName);
+            if (eventData) {
+                // Countdown timer
+                initializeCountdown(eventData.drawTime);
 
-                if (eventData) {
-                    await initializeEvent(user, eventName, eventData);
-                }
-            } catch (error) {
-                console.error("Error initializing event:", error);
+                // Generate map
+                const locations = await getDocs(collection(db, "events", eventName, "locations"));
+                await generateMap(locations);
             }
+        } catch (error) {
+            console.error("Error initializing application:", error);
         }
-    });
+
+        // Listen to authentication state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.emailVerified) {
+                // Update UI for logged-in state
+                document.getElementById("sign-up").style.display = 'none';
+                document.getElementById("log-in").style.display = 'none';
+                document.getElementById("logged-out").style.display = 'none';
+                document.getElementById("logged-in").style.display = 'flex';
+
+                initializeEvent(user, eventName);
+            }
+        });
+    }
 
     async function fetchEvent(eventName) {
         const eventDoc = await getDoc(doc(db, "events", eventName));
@@ -171,7 +180,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return eventDoc.data();
     }
 
-    async function initializeEvent(user, eventName, eventData) {
+    function initializeEvent(user, eventName) {
         // Set up real-time updates for user's account data
         const userDocRef = doc(db, 'users', user.uid);
         onSnapshot(userDocRef, (doc) => {
@@ -180,13 +189,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 updateUserProfileUI(user, userData);
             }
         });
-
-        // Countdown timer
-        initializeCountdown(eventData.drawTime);
-
-        // Generate map
-        const locations = await getDocs(collection(db, "events", eventName, "locations"));
-        await generateMap(locations);
 
         // Set up real-time updates for user's event data
         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
@@ -198,6 +200,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
     }
+
+    initializeApplication();
 
     // Update user profile in the UI
     function updateUserProfileUI(user, userData) {
@@ -526,7 +530,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updateVisitedMarkers(visitedLocations) {
-        console.log("Updating visited markers");
         markers.forEach(marker => {
             if (visitedLocations.includes(marker.locationId)) {
                 // Update the marker as visited
