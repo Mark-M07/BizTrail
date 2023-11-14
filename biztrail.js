@@ -603,19 +603,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (contentElement) {
                     // Update the data-type attribute
                     contentElement.setAttribute("data-type", 'visited');
-                    
+
                     // Update the icon SVG
-                    const iconSVG = contentElement.querySelector('.icon svg');
-                    if (iconSVG) {
-                        // Update the icon to 'fa-circle-check'
-                        iconSVG.setAttribute('data-icon', 'circle-check');
+                    const iconElement = contentElement.querySelector('.icon i, .icon svg');
+                    if (iconElement) {
+                        iconElement.setAttribute('data-icon', 'circle-check');
+
                         // If needed, update the style (e.g., from regular to solid)
                         //iconSVG.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
                     }
                 }
             }
         });
-    }    
+    }
 
     /*function updateVisitedMarkers(visitedLocations) {
         markers.forEach(marker => {
