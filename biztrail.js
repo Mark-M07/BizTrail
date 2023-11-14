@@ -242,6 +242,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById("event-tickets").textContent = userEventData.tickets;
         document.getElementById("points-remaining").textContent = 2000 - userEventData.points;
         document.getElementById("progress-fill").style.width = `${(userEventData.points / 2000) * 100}%`;
+
+        // Update the activity log
+        const activityLogDiv = document.getElementById("activity-log");
+        activityLogDiv.innerHTML = '';  // Clear existing content
+
+        if (userEventData.activityLog && userEventData.activityLog.length > 0) {
+            userEventData.activityLog.forEach(logEntry => {
+                const logDiv = document.createElement('div');
+                logDiv.classList.add('log-entry');  // Add a class for styling if needed
+                logDiv.textContent = logEntry;
+                activityLogDiv.appendChild(logDiv);
+            });
+        } else {
+            activityLogDiv.textContent = 'No activity recorded.';
+        }
     }
 
     const addPointsButton = document.getElementById('add-points');
