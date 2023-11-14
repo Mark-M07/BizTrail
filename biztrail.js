@@ -626,8 +626,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     console.log(iconElement);
                     if (iconElement) {
                         console.log("iconElement found!");
-                        iconElement.className = 'fa-regular fa-circle-check';
+                        //iconElement.className = 'fa-regular fa-circle-check';
+                        iconElement.setAttribute('data-icon', 'circle-check');
                     }
+
+                    // If needed, update the style (e.g., from regular to solid)
+                    //iconElement.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
                 }
             }
         });
