@@ -245,13 +245,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         // Update the activity log
         const activityLogDiv = document.getElementById("activity-log");
-        activityLogDiv.innerHTML = '';  // Clear existing content
+        activityLogDiv.innerHTML = ''; // Clear existing content
 
         if (userEventData.activityLog && userEventData.activityLog.length > 0) {
             userEventData.activityLog.forEach(logEntry => {
+                // Split the log entry into parts using the '~' delimiter
+                const [locationPart, pointsPart, timeStampPart] = logEntry.split('~');
+
+                // Create div for log entry
                 const logDiv = document.createElement('div');
-                logDiv.classList.add('log-entry');  // Add a class for styling if needed
-                logDiv.textContent = logEntry;
+                logDiv.classList.add('log-entry');
+
+                // Create span for location
+                const locationSpan = document.createElement('span');
+                locationSpan.classList.add('location-text');
+                locationSpan.textContent = locationPart.trim();
+                logDiv.appendChild(locationSpan);
+
+                // Create span for points
+                const pointsSpan = document.createElement('span');
+                pointsSpan.classList.add('points-text');
+                pointsSpan.textContent = ' ' + pointsPart;
+                logDiv.appendChild(pointsSpan);
+
+                // Append the timestamp
+                logDiv.append(timeStampPart.trim());
+
+                // Append the log entry to the log container
                 activityLogDiv.appendChild(logDiv);
             });
         } else {
