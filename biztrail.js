@@ -616,7 +616,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                     // Update the icon class
                     const iconSVG = contentElement.querySelector('.icon svg');
-                    console.log(iconElement);
+                    console.log(iconSVG);
                     if (iconSVG) {
                         console.log("iconSVG found!");
                         iconSVG.setAttribute('data-icon', 'circle-check');
@@ -625,8 +625,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     const iconElement = contentElement.querySelector('.icon i');
                     console.log(iconElement);
                     if (iconElement) {
+                        console.log("iconElement found!");
                         iconElement.className = 'fa-regular fa-circle-check';
-                        console.log("Setting iconElement.className to fa-circle-check");
                     }
                 }
             }
