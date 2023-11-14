@@ -173,8 +173,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                         // Generate map
                         const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                        await generateMap(locations);
                         mapGenerated = true;
+                        await generateMap(locations);
+                        console.log("Test 1");
 
                         // Set up real-time updates for user's event data
                         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
@@ -197,6 +198,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     mapGenerated = true;
                     const locations = await getDocs(collection(db, "events", eventName, "locations"));
                     generateMap(locations);
+                    console.log("Test 2");
                 }
             }
 
