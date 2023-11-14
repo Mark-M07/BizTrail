@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
                         onSnapshot(userEventDocRef, (doc) => {
                             if (doc.exists()) {
+                                console.log("On Snapshot userEventDocRef");
                                 const userEventData = doc.data();
                                 updateUserEventUI(userEventData);
                                 updateVisitedMarkers(userEventData.locations || []);
@@ -425,6 +426,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     async function generateMap(locations) {
+        console.log("Generate Map");
         // Request needed libraries.
         const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -567,6 +569,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function toggleHighlight(markerView) {
+        console.log("Toggle Highlight");
         // If there's a currently highlighted marker, remove its highlight.
         if (currentlyHighlighted && currentlyHighlighted !== markerView) {
             currentlyHighlighted.content.classList.remove("highlight");
