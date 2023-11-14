@@ -10,7 +10,6 @@ import {
     sendPasswordResetEmail,
     sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
-// Import the Firebase Functions SDK
 import {
     getFunctions,
     httpsCallable
@@ -58,8 +57,6 @@ const intersectionObserver = new IntersectionObserver((entries) => {
         }
     }
 });
-
-//window.addEventListener('load', initializeApplication);
 
 document.addEventListener('DOMContentLoaded', (event) => {
     // Ensure the DOM is fully loaded
@@ -176,13 +173,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         // Generate map for signed-in user
                         const locations = await getDocs(collection(db, "events", eventName, "locations"));
                         await generateMap(locations);
-                        console.log("Test 1");
 
                         // Set up real-time updates for user's event data
                         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
                         onSnapshot(userEventDocRef, (doc) => {
                             if (doc.exists()) {
-                                console.log("On Snapshot userEventDocRef");
                                 const userEventData = doc.data();
                                 updateUserEventUI(userEventData);
                                 updateVisitedMarkers(userEventData.locations || []);
@@ -195,7 +190,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (!auth.currentUser || !auth.currentUser.emailVerified) {
                     const locations = await getDocs(collection(db, "events", eventName, "locations"));
                     generateMap(locations);
-                    console.log("Test 2");
                 }
             }
 
@@ -296,8 +290,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         try {
             let userLocation = await getUserLocation();
             if (userLocation) {
-                console.log("Sending points data");
-                console.log(`Lat: ${userLocation.latitude}, Long: ${userLocation.longitude}`);
                 const result = await addPoints({
                     eventName: eventName,
                     locationId: "sonderSites",
@@ -425,7 +417,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     async function generateMap(locations) {
-        console.log("Generate Map");
         // Request needed libraries.
         const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -568,7 +559,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function toggleHighlight(markerView) {
-        console.log("Toggle Highlight");
         // If there's a currently highlighted marker, remove its highlight.
         if (currentlyHighlighted && currentlyHighlighted !== markerView) {
             currentlyHighlighted.content.classList.remove("highlight");
