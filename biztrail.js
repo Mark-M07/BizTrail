@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             if (eventData) {
                 // Listen to authentication state changes
-                onAuthStateChanged(auth, async  (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user && user.emailVerified) {
                         // Update UI for logged-in state
                         document.getElementById("sign-up").style.display = 'none';
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 initializeCountdown(eventData.drawTime);
 
                 // Generate map
-                if (!mapGenerated){
+                if (!mapGenerated) {
                     mapGenerated = true;
                     const locations = await getDocs(collection(db, "events", eventName, "locations"));
                     generateMap(locations);
@@ -483,33 +483,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
         content.setAttribute("data-type", property.type);
         const iconClass = 'fa-star';
         content.innerHTML = `
-      <div class="icon-points-container">
-      <div class="icon">
-      <i aria-hidden="true" class="fa-regular ${iconClass}"></i>
+        <div class="icon-points-container">
+            <div class="icon">
+                <i aria-hidden="true" class="fa-regular ${iconClass}"></i>
+            </div>
+            <div class="points">${property.points} points</div>
         </div>
-        <div class="points">${property.points} points</div>
+        <div class="details">
+            <div class="details-close">
+                <i class="fa fa-times"></i>
+            </div>
+            <div class="title">${property.title}</div>
+            <div class="address">${property.address}</div>
+            
+            <div class="features">
+                <div>
+                    <i aria-hidden="true" class="fa-regular fa-circle-question" title="More Info"></i>
+                    <span class="fa-sr-only">More Info</span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title)}" target="_blank" rel="noopener noreferrer">More Info</a>
+                    </div>
+                <div class="direction-link">
+                    <i aria-hidden="true" class="fa-solid fa-route" title="Directions"></i>
+                    <span class="fa-sr-only">Directions</span>
+                    <a href="https://www.google.com/maps/dir//${encodeURIComponent(property.address)}" target="_blank" rel="noopener noreferrer">Directions</a>
+                </div>
+            </div>
         </div>
-      <div class="details">
-      <div class="details-close">
-      <i class="fa fa-times"></i>
-        </div>
-      <div class="title">${property.title}</div>
-      <div class="address">${property.address}</div>
-      
-      <div class="features">
-      <div>
-      <i aria-hidden="true" class="fa-regular fa-circle-question" title="More Info"></i>
-      <span class="fa-sr-only">More Info</span>
-      <span>More Info</span>
-        </div>
-      <div class="direction-link">
-      <i aria-hidden="true" class="fa-solid fa-route" title="Directions"></i>
-      <span class="fa-sr-only">Directions</span>
-      <a href="https://www.google.com/maps/dir//${encodeURIComponent(property.address)}" target="_blank" rel="noopener noreferrer">Directions</a>
-        </div>
-        </div>
-        </div>
-      `;
+    `;
         const closeButton = content.querySelector('.details-close');
         closeButton.addEventListener('click', (event) => {
             if (currentlyHighlighted) {
