@@ -600,17 +600,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
         markers.forEach(marker => {
             if (visitedLocations.includes(marker.locationId)) {
                 const contentElement = marker.content;
+                console.log("visitedLocations includes marker.locationId");
                 if (contentElement) {
                     // Update the data-type attribute
                     contentElement.setAttribute("data-type", 'visited');
 
                     // Update the icon SVG
-                    const iconElement = contentElement.querySelector('.icon i, .icon svg');
+                    /*const iconElement = contentElement.querySelector('.icon i, .icon svg');
                     if (iconElement) {
                         iconElement.setAttribute('data-icon', 'circle-check');
 
                         // If needed, update the style (e.g., from regular to solid)
-                        //iconSVG.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
+                        //iconElement.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
+                    }*/
+
+                    // Update the icon class
+                    const iconSVG = contentElement.querySelector('.icon svg');
+                    console.log(iconElement);
+                    if (iconSVG) {
+                        console.log("iconSVG found!");
+                        iconSVG.setAttribute('data-icon', 'circle-check');
+                    }
+
+                    const iconElement = contentElement.querySelector('.icon i');
+                    console.log(iconElement);
+                    if (iconElement) {
+                        iconElement.className = 'fa-regular fa-circle-check';
+                        console.log("Setting iconElement.className to fa-circle-check");
                     }
                 }
             }
