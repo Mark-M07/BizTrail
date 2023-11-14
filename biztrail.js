@@ -281,6 +281,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             locationSpan.classList.add('location-text');
             locationSpan.textContent = 'No activity recorded.';
             logDiv.appendChild(locationSpan);
+            activityLogDiv.appendChild(logDiv);
         }
     }
 
