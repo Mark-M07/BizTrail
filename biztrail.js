@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         try {
             const eventName = document.getElementById('event-name').dataset.eventName;
             const eventData = await fetchEvent(eventName);
+            let mapGenerated = false;
 
             if (eventData) {
                 // Countdown timer
@@ -171,8 +172,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         });
 
                         // Generate map for signed-in user
-                        const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                        await generateMap(locations);
+                        if (!mapGenerated) {
+                            const locations = await getDocs(collection(db, "events", eventName, "locations"));
+                            await generateMap(locations);
+                            mapGenerated = true;
+                        }
 
                         // Set up real-time updates for user's event data
                         const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
@@ -187,9 +191,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 // Generate map for non-signed-in user
-                if (!auth.currentUser || !auth.currentUser.emailVerified) {
-                    const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                    generateMap(locations);
+                if (!mapGenerated) {
+                    if (!auth.currentUser || !auth.currentUser.emailVerified) {
+                        const locations = await getDocs(collection(db, "events", eventName, "locations"));
+                        generateMap(locations);
+                        mapGenerated = true;
+                    }
                 }
             }
 
