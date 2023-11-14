@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const markers = [];
     let interval;
     let currentlyHighlighted = null;
-    
+
     document.getElementById("points-button").addEventListener("click", () => {
         changeTab('tab5');
     });
@@ -608,6 +608,119 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
     }
+
+    /**
+ * Get user's geolocation coordinates.
+ * Returns a LatLng object if successful, otherwise null.
+ */
+    async function getUserLocation() {
+        if ("geolocation" in navigator) {
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+                });
+                return {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy // Include accuracy
+                };
+            } catch (error) {
+                console.error("Error obtaining geolocation:", error);
+            }
+        } else {
+            alert("Geolocation not supported by this browser.");
+        }
+        return null;
+    }
+
+    const qrCodeScanner = new Html5Qrcode('scanner');
+    let isScannerActive = false;
+
+    function startScanning() {
+        qrCodeScanner.start(
+            { facingMode: "environment" },
+            (error) => {
+                console.error("QR code scanning failed: ", error);
+            },
+            onScanSuccess
+        ).then(() => {
+            isScannerActive = true;
+        }).catch((error) => {
+            console.error("QR code scanning failed: ", error);
+        });
+    }
+
+    function stopScanning() {
+        qrCodeScanner.stop()
+            .then(() => {
+                isScannerActive = false;
+            })
+            .catch((error) => {
+                console.error("Failed to stop QR code scanning: ", error);
+            });
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        const url = new URL(decodedText);
+        checkLocation(url);
+    }
+
+    async function checkLocation(url) {
+        changeTab('tab1'); // Changing tab automatically stops the scanning
+        try {
+            let userLocation = await getUserLocation();
+            if (userLocation) {
+                const result = await addPoints({
+                    eventName: eventName,
+                    locationId: url.searchParams.get("loc"),
+                    userLat: userLocation.latitude,
+                    userLng: userLocation.longitude,
+                    userAccuracy: userLocation.accuracy
+                });
+
+                // Handle the response from your Cloud Function
+                console.log("Points added:", result);
+            } else {
+                console.log("Unable to retrieve user location");
+                // Handle the case where user location couldn't be retrieved
+            }
+        } catch (error) {
+            console.error("Error adding points:", error);
+            // Handle any errors that occur during the points addition process
+        }
+    }
+
+    /*const addPointsButton = document.getElementById('add-points');
+    
+    addPointsButton.addEventListener('click', async function () {
+        try {
+            let userLocation = await getUserLocation();
+            if (userLocation) {
+                const result = await addPoints({
+                    eventName: eventName,
+                    locationId: "sonderSites",
+                    userLat: userLocation.latitude,
+                    userLng: userLocation.longitude,
+                    userAccuracy: userLocation.accuracy
+                });
+    
+                // Handle the response from your Cloud Function
+                console.log("Points added:", result);
+            } else {
+                console.log("Unable to retrieve user location");
+                // Handle the case where user location couldn't be retrieved
+            }
+        } catch (error) {
+            console.error("Error adding points:", error);
+            // Handle any errors that occur during the points addition process
+        }
+    });*/
 });
 
 const passwordReset = async (email) => {
@@ -668,116 +781,3 @@ const googleSignIn = async () => {
         // Handle Errors here.
     }
 };
-
-/**
- * Get user's geolocation coordinates.
- * Returns a LatLng object if successful, otherwise null.
- */
-async function getUserLocation() {
-    if ("geolocation" in navigator) {
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        };
-
-        try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, options);
-            });
-            return {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: position.coords.accuracy // Include accuracy
-            };
-        } catch (error) {
-            console.error("Error obtaining geolocation:", error);
-        }
-    } else {
-        alert("Geolocation not supported by this browser.");
-    }
-    return null;
-}
-
-const qrCodeScanner = new Html5Qrcode('scanner');
-let isScannerActive = false;
-
-function startScanning() {
-    qrCodeScanner.start(
-        { facingMode: "environment" },
-        (error) => {
-            console.error("QR code scanning failed: ", error);
-        },
-        onScanSuccess
-    ).then(() => {
-        isScannerActive = true;
-    }).catch((error) => {
-        console.error("QR code scanning failed: ", error);
-    });
-}
-
-function stopScanning() {
-    qrCodeScanner.stop()
-        .then(() => {
-            isScannerActive = false;
-        })
-        .catch((error) => {
-            console.error("Failed to stop QR code scanning: ", error);
-        });
-}
-
-function onScanSuccess(decodedText, decodedResult) {
-    const url = new URL(decodedText);
-    checkLocation(url);
-}
-
-async function checkLocation(url){
-    changeTab('tab1'); // Changing tab automatically stops the scanning
-    try {
-        let userLocation = await getUserLocation();
-        if (userLocation) {
-            const result = await addPoints({
-                eventName: eventName,
-                locationId: url.searchParams.get("loc"),
-                userLat: userLocation.latitude,
-                userLng: userLocation.longitude,
-                userAccuracy: userLocation.accuracy
-            });
-
-            // Handle the response from your Cloud Function
-            console.log("Points added:", result);
-        } else {
-            console.log("Unable to retrieve user location");
-            // Handle the case where user location couldn't be retrieved
-        }
-    } catch (error) {
-        console.error("Error adding points:", error);
-        // Handle any errors that occur during the points addition process
-    }
-}
-
-/*const addPointsButton = document.getElementById('add-points');
-
-addPointsButton.addEventListener('click', async function () {
-    try {
-        let userLocation = await getUserLocation();
-        if (userLocation) {
-            const result = await addPoints({
-                eventName: eventName,
-                locationId: "sonderSites",
-                userLat: userLocation.latitude,
-                userLng: userLocation.longitude,
-                userAccuracy: userLocation.accuracy
-            });
-
-            // Handle the response from your Cloud Function
-            console.log("Points added:", result);
-        } else {
-            console.log("Unable to retrieve user location");
-            // Handle the case where user location couldn't be retrieved
-        }
-    } catch (error) {
-        console.error("Error adding points:", error);
-        // Handle any errors that occur during the points addition process
-    }
-});*/
