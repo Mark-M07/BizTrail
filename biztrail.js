@@ -153,8 +153,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 // Countdown timer
                 initializeCountdown(eventData.drawTime);
 
-                console.log(eventData.drawTime);
-
                 // Set draw time
                 const drawTimeElement = document.getElementById('draw-time');
                 const formattedDate = formatDateForDisplay(eventData.drawTime);
@@ -221,13 +219,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return eventDoc.data();
     }
 
-    function formatDateForDisplay(dateString) {
-        const date = new Date(dateString);
+    function formatDateForDisplay(timestamp) {
+        // Convert Firestore Timestamp to JavaScript Date object
+        const date = timestamp.toDate();
+
         const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
         const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
 
-        const formattedDate = date.toLocaleString('en-AU', dateOptions);
-        const formattedTime = "at " + date.toLocaleString('en-AU', timeOptions);
+        const formattedDate = date.toLocaleString('en-US', dateOptions);
+        const formattedTime = "at " + date.toLocaleString('en-US', timeOptions);
 
         return `${formattedDate}<br>${formattedTime}`;
     }
