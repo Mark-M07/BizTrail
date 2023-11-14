@@ -275,7 +275,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 activityLogDiv.appendChild(logDiv);
             });
         } else {
-            activityLogDiv.textContent = 'No activity recorded.';
+            const logDiv = document.createElement('div');
+            logDiv.classList.add('log-entry');
+            const locationSpan = document.createElement('span');
+            locationSpan.classList.add('location-text');
+            locationSpan.textContent = 'No activity recorded.';
+            logDiv.appendChild(locationSpan);
         }
     }
 
