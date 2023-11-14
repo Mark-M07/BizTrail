@@ -153,6 +153,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 // Countdown timer
                 initializeCountdown(eventData.drawTime);
 
+                console.log(eventData.drawTime);
+
                 // Set draw time
                 const drawTimeElement = document.getElementById('draw-time');
                 const formattedDate = formatDateForDisplay(eventData.drawTime);
