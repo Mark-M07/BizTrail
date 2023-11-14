@@ -321,32 +321,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    const addPointsButton = document.getElementById('add-points');
-
-    addPointsButton.addEventListener('click', async function () {
-        try {
-            let userLocation = await getUserLocation();
-            if (userLocation) {
-                const result = await addPoints({
-                    eventName: eventName,
-                    locationId: "sonderSites",
-                    userLat: userLocation.latitude,
-                    userLng: userLocation.longitude,
-                    userAccuracy: userLocation.accuracy
-                });
-
-                // Handle the response from your Cloud Function
-                console.log("Points added:", result);
-            } else {
-                console.log("Unable to retrieve user location");
-                // Handle the case where user location couldn't be retrieved
-            }
-        } catch (error) {
-            console.error("Error adding points:", error);
-            // Handle any errors that occur during the points addition process
-        }
-    });
-
     document.querySelectorAll('.tablink').forEach(function (tabButton) {
         tabButton.addEventListener('click', function () {
             changeTab(this.getAttribute('data-tab'));
@@ -754,8 +728,56 @@ function stopScanning() {
 
 function onScanSuccess(decodedText, decodedResult) {
     const url = new URL(decodedText);
-    console.log(url);
-    //const imageKey = url.searchParams.get("pet");
-    changeTab('tab1'); // Changing tab automatically stops the scanning
-    //addPoints(150);
+    checkLocation(url);
 }
+
+async function checkLocation(url){
+    changeTab('tab1'); // Changing tab automatically stops the scanning
+    try {
+        let userLocation = await getUserLocation();
+        if (userLocation) {
+            const result = await addPoints({
+                eventName: eventName,
+                locationId: url.searchParams.get("loc"),
+                userLat: userLocation.latitude,
+                userLng: userLocation.longitude,
+                userAccuracy: userLocation.accuracy
+            });
+
+            // Handle the response from your Cloud Function
+            console.log("Points added:", result);
+        } else {
+            console.log("Unable to retrieve user location");
+            // Handle the case where user location couldn't be retrieved
+        }
+    } catch (error) {
+        console.error("Error adding points:", error);
+        // Handle any errors that occur during the points addition process
+    }
+}
+
+/*const addPointsButton = document.getElementById('add-points');
+
+addPointsButton.addEventListener('click', async function () {
+    try {
+        let userLocation = await getUserLocation();
+        if (userLocation) {
+            const result = await addPoints({
+                eventName: eventName,
+                locationId: "sonderSites",
+                userLat: userLocation.latitude,
+                userLng: userLocation.longitude,
+                userAccuracy: userLocation.accuracy
+            });
+
+            // Handle the response from your Cloud Function
+            console.log("Points added:", result);
+        } else {
+            console.log("Unable to retrieve user location");
+            // Handle the case where user location couldn't be retrieved
+        }
+    } catch (error) {
+        console.error("Error adding points:", error);
+        // Handle any errors that occur during the points addition process
+    }
+});*/
