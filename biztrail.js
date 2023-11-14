@@ -73,6 +73,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const markers = [];
     let interval;
     let currentlyHighlighted = null;
+    
+    document.getElementById("points-button").addEventListener("click", () => {
+        changeTab('tab5');
+    });
+
+    document.getElementById("countdown-button").addEventListener("click", () => {
+        changeTab('tab4');
+    });
+
+    document.getElementById("tickets-button").addEventListener("click", () => {
+        changeTab('tab4');
+    });
 
     signupForm.addEventListener('submit', async function (e) {
         e.preventDefault(); // Prevent the default form submission
@@ -610,7 +622,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         iconSVG.setAttribute('data-icon', 'circle-check');
 
                         // If needed, update the style (e.g., from regular to solid)
-                        //iconElement.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
+                        //iconSVG.setAttribute('data-prefix', 'fas'); // 'fas' for solid, 'far' for regular
                     }
 
                     // Update the <i> tag icon if it exists
