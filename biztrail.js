@@ -67,6 +67,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const signupForm = document.getElementById('signup-form');
     const loginForm = document.getElementById('login-form');
     const accountForm = document.getElementById('account-form');
+    const eventPoints = document.getElementById("event-points");
+    const eventTickets = document.getElementById("event-tickets");
+    const pointsRemaining = document.getElementById("points-remaining");
+    const progressFill = document.getElementById("progress-fill");
+    const activityLogDiv = document.getElementById("activity-log");
+    const spans = document.querySelectorAll('.text-countdown span');
     const markers = [];
     let interval;
     let currentlyHighlighted = null;
@@ -238,17 +244,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Update user event in the UI
     function updateUserEventUI(userEventData) {
         // Update the UI with user event data
-        document.getElementById("event-points").textContent = userEventData.points;
-        document.getElementById("event-tickets").textContent = userEventData.tickets;
-        document.getElementById("points-remaining").textContent = 2000 - userEventData.points;
-        document.getElementById("progress-fill").style.width = `${(userEventData.points / 2000) * 100}%`;
+        eventPoints.textContent = userEventData.points;
+        eventTickets.textContent = userEventData.tickets;
+        pointsRemaining.textContent = 2000 - userEventData.points;
+        progressFill.style.width = `${(userEventData.points / 2000) * 100}%`;
 
         // Update the activity log
-        const activityLogDiv = document.getElementById("activity-log");
         activityLogDiv.innerHTML = ''; // Clear existing content
 
         if (userEventData.activityLog && userEventData.activityLog.length > 0) {
-            userEventData.activityLog.forEach(logEntry => {
+            userEventData.activityLog.slice().reverse().forEach(logEntry => {
                 // Split the log entry into parts using the '~' delimiter
                 const [locationPart, pointsPart, timeStampPart] = logEntry.split('~');
 
@@ -404,8 +409,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
-            // Assuming your spans are in order, we'll update them
-            const spans = document.querySelectorAll('.text-countdown span');
             spans[0].textContent = Math.floor(days / 10);
             spans[1].textContent = days % 10;
             spans[2].textContent = Math.floor(hours / 10);
