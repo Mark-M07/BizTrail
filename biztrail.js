@@ -144,45 +144,55 @@ document.addEventListener('DOMContentLoaded', (event) => {
         try {
             const eventName = document.getElementById('event-name').dataset.eventName;
             const eventData = await fetchEvent(eventName);
+            let mapGenerated = false;
 
             if (eventData) {
+                // Listen to authentication state changes
+                onAuthStateChanged(auth, async  (user) => {
+                    if (user && user.emailVerified) {
+                        // Update UI for logged-in state
+                        document.getElementById("sign-up").style.display = 'none';
+                        document.getElementById("log-in").style.display = 'none';
+                        document.getElementById("logged-out").style.display = 'none';
+                        document.getElementById("logged-in").style.display = 'flex';
+
+                        // Set up real-time updates for user's account data
+                        const userDocRef = doc(db, 'users', user.uid);
+                        onSnapshot(userDocRef, (doc) => {
+                            if (doc.exists()) {
+                                const userData = doc.data();
+                                updateUserProfileUI(user, userData);
+                            }
+                        });
+
+                        // Generate map
+                        const locations = await getDocs(collection(db, "events", eventName, "locations"));
+                        await generateMap(locations);
+                        mapGenerated = true;
+
+                        // Set up real-time updates for user's event data
+                        const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
+                        onSnapshot(userEventDocRef, (doc) => {
+                            if (doc.exists()) {
+                                const userEventData = doc.data();
+                                updateUserEventUI(userEventData);
+                                updateVisitedMarkers(userEventData.locations || []);
+                            }
+                        });
+                    }
+                });
+
                 // Countdown timer
                 initializeCountdown(eventData.drawTime);
 
                 // Generate map
-                const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                await generateMap(locations);
+                if (!mapGenerated){
+                    mapGenerated = true;
+                    const locations = await getDocs(collection(db, "events", eventName, "locations"));
+                    generateMap(locations);
+                }
             }
 
-            // Listen to authentication state changes
-            onAuthStateChanged(auth, (user) => {
-                if (user && user.emailVerified) {
-                    // Update UI for logged-in state
-                    document.getElementById("sign-up").style.display = 'none';
-                    document.getElementById("log-in").style.display = 'none';
-                    document.getElementById("logged-out").style.display = 'none';
-                    document.getElementById("logged-in").style.display = 'flex';
-
-                    // Set up real-time updates for user's account data
-                    const userDocRef = doc(db, 'users', user.uid);
-                    onSnapshot(userDocRef, (doc) => {
-                        if (doc.exists()) {
-                            const userData = doc.data();
-                            updateUserProfileUI(user, userData);
-                        }
-                    });
-
-                    // Set up real-time updates for user's event data
-                    const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-                    onSnapshot(userEventDocRef, (doc) => {
-                        if (doc.exists()) {
-                            const userEventData = doc.data();
-                            updateUserEventUI(userEventData);
-                            updateVisitedMarkers(userEventData.locations || []);
-                        }
-                    });
-                }
-            });
         } catch (error) {
             console.error("Error initializing application:", error);
         }
