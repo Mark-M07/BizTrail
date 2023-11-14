@@ -608,6 +608,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     console.log(contentElement);
                     console.log("Setting data-type to visited");
                     // Update the icon class
+                    const iconSVG = contentElement.querySelector('.icon svg');
+                    if (iconSVG) {
+                        console.log("iconSVG found!");
+                        console.log(iconSVG);
+                    }
                     const iconElement = contentElement.querySelector('.icon i');
                     console.log(iconElement);
                     if (iconElement) {
