@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 // Create span for location
                 const locationSpan = document.createElement('span');
                 locationSpan.classList.add('location-text');
-                locationSpan.textContent = locationPart.trim();
+                locationSpan.textContent = locationPart;
                 logDiv.appendChild(locationSpan);
 
                 // Create span for points
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 logDiv.appendChild(pointsSpan);
 
                 // Append the timestamp
-                logDiv.append(timeStampPart.trim());
+                logDiv.append(timeStampPart);
 
                 // Append the log entry to the log container
                 activityLogDiv.appendChild(logDiv);
