@@ -153,39 +153,39 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const locations = await getDocs(collection(db, "events", eventName, "locations"));
                 await generateMap(locations);
             }
+
+            // Listen to authentication state changes
+            onAuthStateChanged(auth, (user) => {
+                if (user && user.emailVerified) {
+                    // Update UI for logged-in state
+                    document.getElementById("sign-up").style.display = 'none';
+                    document.getElementById("log-in").style.display = 'none';
+                    document.getElementById("logged-out").style.display = 'none';
+                    document.getElementById("logged-in").style.display = 'flex';
+
+                    // Set up real-time updates for user's account data
+                    const userDocRef = doc(db, 'users', user.uid);
+                    onSnapshot(userDocRef, (doc) => {
+                        if (doc.exists()) {
+                            const userData = doc.data();
+                            updateUserProfileUI(user, userData);
+                        }
+                    });
+
+                    // Set up real-time updates for user's event data
+                    const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
+                    onSnapshot(userEventDocRef, (doc) => {
+                        if (doc.exists()) {
+                            const userEventData = doc.data();
+                            updateUserEventUI(userEventData);
+                            updateVisitedMarkers(userEventData.locations || []);
+                        }
+                    });
+                }
+            });
         } catch (error) {
             console.error("Error initializing application:", error);
         }
-
-        // Listen to authentication state changes
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.emailVerified) {
-                // Update UI for logged-in state
-                document.getElementById("sign-up").style.display = 'none';
-                document.getElementById("log-in").style.display = 'none';
-                document.getElementById("logged-out").style.display = 'none';
-                document.getElementById("logged-in").style.display = 'flex';
-
-                // Set up real-time updates for user's account data
-                const userDocRef = doc(db, 'users', user.uid);
-                onSnapshot(userDocRef, (doc) => {
-                    if (doc.exists()) {
-                        const userData = doc.data();
-                        updateUserProfileUI(user, userData);
-                    }
-                });
-
-                // Set up real-time updates for user's event data
-                const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-                onSnapshot(userEventDocRef, (doc) => {
-                    if (doc.exists()) {
-                        const userEventData = doc.data();
-                        updateUserEventUI(userEventData);
-                        updateVisitedMarkers(userEventData.locations || []);
-                    }
-                });
-            }
-        });
     }
 
     async function fetchEvent(eventName) {
