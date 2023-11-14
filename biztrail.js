@@ -601,14 +601,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (visitedLocations.includes(marker.locationId)) {
                 // Update the marker as visited
                 const contentElement = marker.content;
+                console.log("visitedLocations includes marker.locationId");
                 if (contentElement) {
                     // Update the data-type attribute
                     contentElement.setAttribute("data-type", 'visited');
-
+                    console.log(contentElement);
+                    console.log("Setting data-type to visited");
                     // Update the icon class
                     const iconElement = contentElement.querySelector('.icon i');
+                    console.log(iconElement);
                     if (iconElement) {
                         iconElement.className = 'fa-regular fa-circle-check';
+                        console.log("Setting iconElement.className to fa-circle-check");
                     }
                 }
             }
