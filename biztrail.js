@@ -153,6 +153,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 // Countdown timer
                 initializeCountdown(eventData.drawTime);
 
+                // Set draw time
+                const drawTimeElement = document.getElementById('draw-time');
+                const formattedDate = formatDateForDisplay(eventData.drawTime);
+                drawTimeElement.innerHTML = formattedDate;
+
                 // Listen to authentication state changes
                 onAuthStateChanged(auth, async (user) => {
                     if (user && user.emailVerified) {
@@ -194,7 +199,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (!mapGenerated) {
                     if (!auth.currentUser || !auth.currentUser.emailVerified) {
                         const locations = await getDocs(collection(db, "events", eventName, "locations"));
-                        generateMap(locations);
+                        await generateMap(locations);
                         mapGenerated = true;
                     }
                 }
@@ -212,6 +217,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
             return null;
         }
         return eventDoc.data();
+    }
+
+    function formatDateForDisplay(dateString) {
+        const date = new Date(dateString);
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+
+        const formattedDate = date.toLocaleString('en-AU', dateOptions);
+        const formattedTime = "at " + date.toLocaleString('en-AU', timeOptions);
+
+        return `${formattedDate}<br>${formattedTime}`;
     }
 
     initializeApplication();
