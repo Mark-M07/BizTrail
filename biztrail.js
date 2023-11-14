@@ -166,7 +166,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 document.getElementById("logged-out").style.display = 'none';
                 document.getElementById("logged-in").style.display = 'flex';
 
-                initializeEvent(user, eventName);
+                // Set up real-time updates for user's account data
+                const userDocRef = doc(db, 'users', user.uid);
+                onSnapshot(userDocRef, (doc) => {
+                    if (doc.exists()) {
+                        const userData = doc.data();
+                        updateUserProfileUI(user, userData);
+                    }
+                });
+
+                // Set up real-time updates for user's event data
+                const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
+                onSnapshot(userEventDocRef, (doc) => {
+                    if (doc.exists()) {
+                        const userEventData = doc.data();
+                        updateUserEventUI(userEventData);
+                        updateVisitedMarkers(userEventData.locations || []);
+                    }
+                });
             }
         });
     }
@@ -178,27 +195,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             return null;
         }
         return eventDoc.data();
-    }
-
-    function initializeEvent(user, eventName) {
-        // Set up real-time updates for user's account data
-        const userDocRef = doc(db, 'users', user.uid);
-        onSnapshot(userDocRef, (doc) => {
-            if (doc.exists()) {
-                const userData = doc.data();
-                updateUserProfileUI(user, userData);
-            }
-        });
-
-        // Set up real-time updates for user's event data
-        const userEventDocRef = doc(db, 'users', user.uid, 'events', eventName);
-        onSnapshot(userEventDocRef, (doc) => {
-            if (doc.exists()) {
-                const userEventData = doc.data();
-                updateUserEventUI(userEventData);
-                updateVisitedMarkers(userEventData.locations || []);
-            }
-        });
     }
 
     initializeApplication();
