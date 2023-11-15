@@ -668,12 +668,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return null;
     }
 
-    function startScanning() {
-        if (isScannerTransitioning) {
-            return;
-        }    
+    async function startScanning() {
         isScannerTransitioning = true;
+        try {
+            await qrCodeScanner.start({ facingMode: "environment" }, onScanSuccess);
+            isScannerActive = true;
+        } catch (error) {
+            console.error("QR code scanning failed: ", error);
+        } finally {
+            isScannerTransitioning = false;
+        }
+    }    
+    
+    async function stopScanning() {
+        isScannerTransitioning = true;
+        try {
+            await qrCodeScanner.stop();
+            isScannerActive = false;
+        } catch (error) {
+            console.error("Failed to stop QR code scanning: ", error);
+        } finally {
+            isScannerTransitioning = false;
+        }
+    }
 
+    /*function startScanning() {
+        isScannerTransitioning = true;
         qrCodeScanner.start(
             { facingMode: "environment" },
             (error) => {
@@ -704,7 +724,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 console.error("Failed to stop QR code scanning: ", error);
                 isScannerTransitioning = false;
             });
-    }
+    }*/
 
     function onScanSuccess(decodedText, decodedResult) {
         changeTab('tab1'); // Changing tab automatically stops the scanning
