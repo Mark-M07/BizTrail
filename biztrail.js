@@ -699,7 +699,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (loc) {
             checkLocation(loc);
         } else {
-            console.log("param loc does not exist");
+            //console.log("param loc does not exist");
+            scanLoading.style.display = 'none';
+            imageFail.style.display = 'flex';
+            scanMessage.textContent = "Invalid QR or code word.";
+            scanMessage.style.backgroundColor = '#ffdede';
         }
     }
 
@@ -712,9 +716,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         scanMessage.style.backgroundColor = '#e0e0e0';
         try {
             let userLocation = await getUserLocation();
-            const testLoc = `${loc}`;
-            console.log(testLoc);
-            console.log(testLoc.length);
             if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
@@ -724,56 +725,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     userAccuracy: userLocation.accuracy
                 });
 
-                // Handle the response from your Cloud Function
-                console.log("Points added:", result);
-
                 scanLoading.style.display = 'none';
                 imageSuccess.style.display = 'flex';
-                scanMessage.textContent = "Points added!";
+                scanMessage.textContent = result;
                 scanMessage.style.backgroundColor = '#deffde';
             } else {
-                //console.log("Unable to retrieve user location");
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
                 scanMessage.textContent = "Unable to retrieve user location.";
                 scanMessage.style.backgroundColor = '#ffdede';
             }
         } catch (error) {
-            console.error("Error adding points:", error);
-
+            //console.error("Error adding points:", error);
             scanLoading.style.display = 'none';
             imageFail.style.display = 'flex';
             scanMessage.textContent = error.message;
             scanMessage.style.backgroundColor = '#ffdede';
-            // Handle any errors that occur during the points addition process
         }
     }
-
-    /*const addPointsButton = document.getElementById('add-points');
-    
-    addPointsButton.addEventListener('click', async function () {
-        try {
-            let userLocation = await getUserLocation();
-            if (userLocation) {
-                const result = await addPoints({
-                    eventName: eventName,
-                    locationId: "sonderSites",
-                    userLat: userLocation.latitude,
-                    userLng: userLocation.longitude,
-                    userAccuracy: userLocation.accuracy
-                });
-    
-                // Handle the response from your Cloud Function
-                console.log("Points added:", result);
-            } else {
-                console.log("Unable to retrieve user location");
-                // Handle the case where user location couldn't be retrieved
-            }
-        } catch (error) {
-            console.error("Error adding points:", error);
-            // Handle any errors that occur during the points addition process
-        }
-    });*/
 });
 
 const passwordReset = async (email) => {
