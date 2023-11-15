@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (loc) {
                     changeTab('tab1'); // Changing tab automatically stops the scanning
                     scanResult.style.display = 'flex';
-                    checkLocation(url);
+                    checkLocation(loc);
                 } else {
                     const howItWorks = url.searchParams.get("how-it-works");
                     if (howItWorks) {
@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const url = new URL(decodedText);
         const loc = url.searchParams.get("loc");
         if (loc) {
-            checkLocation(url);
+            checkLocation(loc);
         } else {
             console.log("param loc does not exist");
         }
@@ -718,7 +718,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
-                    locationId: testLoc,
+                    locationId: loc,
                     userLat: userLocation.latitude,
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
