@@ -75,7 +75,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const imageFail = document.getElementById("image-fail");
     const scanMessage = document.getElementById("scan-message");
     const spans = document.querySelectorAll('.text-countdown span');
+    const qrCodeScanner = new Html5Qrcode('scanner');
     const markers = [];
+    let isScannerActive = false;
+    let isScannerTransitioning = false;
     let interval;
     let currentlyHighlighted = null;
 
@@ -402,9 +405,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
 
         if (targetTabId === "tab3") {
-            startScanning();
-        }
-        else if (isScannerActive) {
+            if (!isScannerActive && !isScannerTransitioning) {
+                startScanning();
+            }
+        } else if (isScannerActive && !isScannerTransitioning) {
             stopScanning();
         }
 
@@ -664,10 +668,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return null;
     }
 
-    const qrCodeScanner = new Html5Qrcode('scanner');
-    let isScannerActive = false;
-
     function startScanning() {
+        if (isScannerTransitioning) {
+            return;
+        }    
+        isScannerTransitioning = true;
+
         qrCodeScanner.start(
             { facingMode: "environment" },
             (error) => {
@@ -676,18 +682,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
             onScanSuccess
         ).then(() => {
             isScannerActive = true;
+            isScannerTransitioning = false;
         }).catch((error) => {
             console.error("QR code scanning failed: ", error);
+            isScannerTransitioning = false;
         });
     }
 
     function stopScanning() {
+        if (isScannerTransitioning) {
+            return;
+        }    
+        isScannerTransitioning = true;
+
         qrCodeScanner.stop()
             .then(() => {
                 isScannerActive = false;
+                isScannerTransitioning = false;
             })
             .catch((error) => {
                 console.error("Failed to stop QR code scanning: ", error);
+                isScannerTransitioning = false;
             });
     }
 
