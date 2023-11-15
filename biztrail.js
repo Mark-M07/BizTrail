@@ -695,9 +695,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         changeTab('tab1'); // Changing tab automatically stops the scanning
         scanResult.style.display = 'flex';
         const url = new URL(decodedText);
-        console.log(url);
         const loc = url.searchParams.get("loc");
-        console.log(loc);
         if (loc) {
             checkLocation(url);
         } else {
@@ -714,10 +712,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         scanMessage.style.backgroundColor = '#e0e0e0';
         try {
             let userLocation = await getUserLocation();
+            const testLoc = `${loc}`;
+            console.log(testLoc);
+            console.log(testLoc.length);
             if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
-                    locationId: String(loc),
+                    locationId: testLoc,
                     userLat: userLocation.latitude,
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
