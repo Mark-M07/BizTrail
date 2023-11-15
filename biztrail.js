@@ -671,14 +671,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
     async function startScanning() {
         isScannerTransitioning = true;
         try {
-            await qrCodeScanner.start({ facingMode: "environment" }, onScanSuccess);
+            await new Promise((resolve, reject) => {
+                qrCodeScanner.start(
+                    { facingMode: "environment" },
+                    onScanSuccess,
+                    error => reject(error)
+                ).then(resolve);
+            });
             isScannerActive = true;
         } catch (error) {
             console.error("QR code scanning failed: ", error);
         } finally {
             isScannerTransitioning = false;
         }
-    }    
+    }
     
     async function stopScanning() {
         isScannerTransitioning = true;
