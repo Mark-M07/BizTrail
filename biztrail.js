@@ -162,6 +162,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
             let mapGenerated = false;
 
             if (eventData) {
+                const url = new URL(window.location.href);
+                // If page loads with loc param check location
+                const loc = url.searchParams.get("loc");
+                if (loc) {
+                    checkLocation(url);
+                } else {
+                    const howItWorks = url.searchParams.get("how-it-works");
+                    if (howItWorks) {
+                        document.getElementById("how-it-works").style.display = 'flex';
+                    }
+                }
+
+                // Remove any query params
+                url.searchParams.forEach((_, paramName) => url.searchParams.delete(paramName));
+
+                // Update the URL without reloading the page
+                window.history.replaceState({}, '', url);
+
                 // Countdown timer
                 initializeCountdown(eventData.drawTime);
 
@@ -668,17 +686,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function onScanSuccess(decodedText, decodedResult) {
         const url = new URL(decodedText);
-        checkLocation(url);
+        const loc = url.searchParams.get("loc");
+        if (loc) {
+            checkLocation(url);
+        } else {
+            console.log("param loc does not exist");
+        }
     }
 
-    async function checkLocation(url) {
+    async function checkLocation(loc) {
         changeTab('tab1'); // Changing tab automatically stops the scanning
         try {
             let userLocation = await getUserLocation();
             if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
-                    locationId: url.searchParams.get("loc"),
+                    locationId: loc,
                     userLat: userLocation.latitude,
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
