@@ -166,6 +166,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 // If page loads with loc param check location
                 const loc = url.searchParams.get("loc");
                 if (loc) {
+                    changeTab('tab1'); // Changing tab automatically stops the scanning
+                    document.getElementById("scan-result").style.display = 'flex';
                     checkLocation(url);
                 } else {
                     const howItWorks = url.searchParams.get("how-it-works");
@@ -685,6 +687,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
+        changeTab('tab1'); // Changing tab automatically stops the scanning
+        document.getElementById("scan-result").style.display = 'flex';
         const url = new URL(decodedText);
         const loc = url.searchParams.get("loc");
         if (loc) {
@@ -695,7 +699,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     async function checkLocation(loc) {
-        changeTab('tab1'); // Changing tab automatically stops the scanning
         try {
             let userLocation = await getUserLocation();
             if (userLocation) {
