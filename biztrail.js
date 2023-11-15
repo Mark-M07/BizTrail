@@ -724,7 +724,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
                 });
-
+                console.log(result); // Check what is returned here
+                console.log(typeof result); // Should output 'string' if correct
+                
                 scanLoading.style.display = 'none';
                 imageSuccess.style.display = 'flex';
                 scanMessage.textContent = result;
