@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const pointsRemaining = document.getElementById("points-remaining");
     const progressFill = document.getElementById("progress-fill");
     const activityLogDiv = document.getElementById("activity-log");
+    const scanResult = document.getElementById("scan-result");
+    const scanLoading = document.getElementById("scan-loading");
+    const imageSuccess = document.getElementById("image-success");
+    const imageFail = document.getElementById("image-fail");
+    const scanMessage = document.getElementById("scan-message");
     const spans = document.querySelectorAll('.text-countdown span');
     const markers = [];
     let interval;
@@ -167,7 +172,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const loc = url.searchParams.get("loc");
                 if (loc) {
                     changeTab('tab1'); // Changing tab automatically stops the scanning
-                    document.getElementById("scan-result").style.display = 'flex';
+                    scanResult.style.display = 'flex';
                     checkLocation(url);
                 } else {
                     const howItWorks = url.searchParams.get("how-it-works");
@@ -688,7 +693,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function onScanSuccess(decodedText, decodedResult) {
         changeTab('tab1'); // Changing tab automatically stops the scanning
-        document.getElementById("scan-result").style.display = 'flex';
+        scanResult.style.display = 'flex';
         const url = new URL(decodedText);
         const loc = url.searchParams.get("loc");
         if (loc) {
@@ -699,6 +704,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     async function checkLocation(loc) {
+        scanLoading.style.display = 'block';
+        imageSuccess.style.display = 'none';
+        imageFail.style.display = 'none';
+        scanMessage.textContent = "Checking QR code...";
+        scanMessage.style.backgroundColor = '#e0e0e0';
         try {
             let userLocation = await getUserLocation();
             if (userLocation) {
@@ -712,12 +722,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 // Handle the response from your Cloud Function
                 console.log("Points added:", result);
+
+                scanLoading.style.display = 'none';
+                imageSuccess.style.display = 'flex';
+                scanMessage.textContent = "Points added!";
+                scanMessage.style.backgroundColor = '#deffde';
             } else {
-                console.log("Unable to retrieve user location");
-                // Handle the case where user location couldn't be retrieved
+                //console.log("Unable to retrieve user location");
+                scanLoading.style.display = 'none';
+                imageFail.style.display = 'flex';
+                scanMessage.textContent = "Unable to retrieve user location.";
+                scanMessage.style.backgroundColor = '#ffdede';
             }
         } catch (error) {
             console.error("Error adding points:", error);
+
+            scanLoading.style.display = 'none';
+            imageFail.style.display = 'flex';
+            scanMessage.textContent = error.message;
+            scanMessage.style.backgroundColor = '#ffdede';
             // Handle any errors that occur during the points addition process
         }
     }
