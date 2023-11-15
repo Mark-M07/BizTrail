@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
-                    locationId: loc,
+                    locationId: loc.trim(),
                     userLat: userLocation.latitude,
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
