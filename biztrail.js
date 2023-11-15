@@ -695,7 +695,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         changeTab('tab1'); // Changing tab automatically stops the scanning
         scanResult.style.display = 'flex';
         const url = new URL(decodedText);
+        console.log(url);
         const loc = url.searchParams.get("loc");
+        console.log(loc);
         if (loc) {
             checkLocation(url);
         } else {
@@ -704,6 +706,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     async function checkLocation(loc) {
+        scanMessage.style.display = 'block';
         scanLoading.style.display = 'block';
         imageSuccess.style.display = 'none';
         imageFail.style.display = 'none';
