@@ -729,9 +729,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Test 1");
         scanResult.style.display = 'flex';
         console.log("Test 2");
-        const url = new URL(decodedText);
+        //const url = new URL(decodedText);
         console.log("Test 3");
-        const loc = url.searchParams.get("loc");
+        //const loc = url.searchParams.get("loc");
+        const loc = "wattsFresh";
         console.log("Test 4");
         if (loc) {
             checkLocation(loc);
