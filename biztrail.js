@@ -701,6 +701,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
+        console.log("Test -1");
         changeTab('tab1'); // Changing tab automatically stops the scanning
         scanResult.style.display = 'flex';
         const url = new URL(decodedText);
