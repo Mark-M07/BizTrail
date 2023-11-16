@@ -396,33 +396,54 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function changeTab(targetTabId) {
-        console.log("changeTab");
+        console.log("changeTab - start", targetTabId);
+
         // Deactivate all tabs
         document.querySelectorAll(".tabcontent").forEach(function (tab) {
             tab.classList.remove('active-tab');
             tab.style.display = 'none';
         });
+        console.log("changeTab - tabs deactivated");
+
         document.querySelectorAll('.tablink').forEach(function (btn) {
             btn.classList.remove('active-tab');
         });
+        console.log("changeTab - tab links deactivated");
 
         if (targetTabId === "tab3") {
             if (!isScannerActive && !isScannerTransitioning) {
+                console.log("changeTab - starting scanner");
                 startScanning();
             }
-        } else if (isScannerActive && !isScannerTransitioning) {
+        }
+        else if (isScannerActive && !isScannerTransitioning) {
+            console.log("changeTab - stopping scanner");
             stopScanning();
         }
 
         // Activate the target tab's content
         const targetTab = document.getElementById(targetTabId);
+        if (!targetTab) {
+            console.error("changeTab - targetTab not found:", targetTabId);
+            return;
+        }
+
         targetTab.style.display = 'block';  // Set display to block
         setTimeout(() => {
             targetTab.classList.add('active-tab'); // This will trigger the opacity transition
         }, 10); // Small delay to ensure the block display has rendered in the browser
 
+        console.log("changeTab - tab activated", targetTabId);
+
         // Find the associated button for the tab and mark it as active
-        document.querySelector(`.tablink[data-tab="${targetTabId}"]`).classList.add('active-tab');
+        const button = document.querySelector(`.tablink[data-tab="${targetTabId}"]`);
+        if (button) {
+            button.classList.add('active-tab');
+        } else {
+            console.error("changeTab - associated button not found for tab:", targetTabId);
+        }
+
+        console.log("changeTab - end");
     }
 
     function initializeCountdown(drawTime) {
