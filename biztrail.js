@@ -1,4 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js";
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -26,18 +27,21 @@ import {
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
     ({ key: "AIzaSyCkI7_eaRpS3YcXXt29lsFCdRy4zUZ59yk", v: "beta" });
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
     apiKey: "AIzaSyD5AQTiAWxG1viyNpPrdQaCPP2fnmZXgvA",
     authDomain: "biz-trail.firebaseapp.com",
     projectId: "biz-trail",
     storageBucket: "biz-trail.appspot.com",
     messagingSenderId: "972839717909",
-    appId: "1:972839717909:web:3283259443b400e13e521c"
-};
+    appId: "1:972839717909:web:3283259443b400e13e521c",
+    measurementId: "G-WGLMV325KN"
+  };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const auth = getAuth(app);
 auth.languageCode = 'en';
 const googleProvider = new GoogleAuthProvider();
@@ -396,28 +400,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function changeTab(targetTabId) {
-        console.log("changeTab - start", targetTabId);
-
         // Deactivate all tabs
         document.querySelectorAll(".tabcontent").forEach(function (tab) {
             tab.classList.remove('active-tab');
             tab.style.display = 'none';
         });
-        console.log("changeTab - tabs deactivated");
 
         document.querySelectorAll('.tablink').forEach(function (btn) {
             btn.classList.remove('active-tab');
         });
-        console.log("changeTab - tab links deactivated");
 
         if (targetTabId === "tab3") {
             if (!isScannerActive && !isScannerTransitioning) {
-                console.log("changeTab - starting scanner");
                 startScanning();
             }
         }
         else if (isScannerActive && !isScannerTransitioning) {
-            console.log("changeTab - stopping scanner");
             stopScanning();
         }
 
@@ -433,8 +431,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             targetTab.classList.add('active-tab'); // This will trigger the opacity transition
         }, 10); // Small delay to ensure the block display has rendered in the browser
 
-        console.log("changeTab - tab activated", targetTabId);
-
         // Find the associated button for the tab and mark it as active
         const button = document.querySelector(`.tablink[data-tab="${targetTabId}"]`);
         if (button) {
@@ -442,8 +438,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         } else {
             console.error("changeTab - associated button not found for tab:", targetTabId);
         }
-
-        console.log("changeTab - end");
     }
 
     function initializeCountdown(drawTime) {
@@ -731,24 +725,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (loc) {
                 checkLocation(loc);
             } else {
-                scanLoading.style.display = 'none';
-                imageSuccess.style.display = 'none';
-                imageFail.style.display = 'flex';
-                scanMessage.style.display = 'block';
-                scanMessage.textContent = "Invalid QR or code word.";
-                scanMessage.style.backgroundColor = '#ffdede';
+                invalidQR();
             }
         } catch (error) {
             console.error("Error parsing URL:", error);
-            scanLoading.style.display = 'none';
-            imageSuccess.style.display = 'none';
-            imageFail.style.display = 'flex';
-            scanMessage.style.display = 'block';
-            scanMessage.textContent = "Invalid QR or code word.";
-            scanMessage.style.backgroundColor = '#ffdede';
+            invalidQR();
         }
         scanResult.style.display = 'flex';
         changeTab('tab1');
+    }
+
+    function invalidQR() {
+        scanLoading.style.display = 'none';
+        imageSuccess.style.display = 'none';
+        imageFail.style.display = 'flex';
+        scanMessage.style.display = 'block';
+        scanMessage.textContent = "Invalid QR or code word.";
+        scanMessage.style.backgroundColor = '#ffdede';
     }
 
     async function checkLocation(loc) {
