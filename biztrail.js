@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { 
+import {
     getAnalytics,
     logEvent
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js";
@@ -30,9 +30,9 @@ import {
 (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
     ({ key: "AIzaSyCkI7_eaRpS3YcXXt29lsFCdRy4zUZ59yk", v: "beta" });
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
     apiKey: "AIzaSyD5AQTiAWxG1viyNpPrdQaCPP2fnmZXgvA",
     authDomain: "biz-trail.firebaseapp.com",
     projectId: "biz-trail",
@@ -40,7 +40,7 @@ import {
     messagingSenderId: "972839717909",
     appId: "1:972839717909:web:3283259443b400e13e521c",
     measurementId: "G-WGLMV325KN"
-  };
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -66,7 +66,6 @@ const intersectionObserver = new IntersectionObserver((entries) => {
 });
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM Loaded");
     // Ensure the DOM is fully loaded
     const eventName = document.getElementById('event-name').dataset.eventName;
     const signupForm = document.getElementById('signup-form');
@@ -179,25 +178,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             if (eventData) {
                 const url = new URL(window.location.href);
-                
+
                 const loc = url.searchParams.get("loc");
                 if (loc) {
                     changeTab('tab1');
                     scanResult.style.display = 'flex';
                     checkLocation(loc);
-                } 
-                
+                }
+
                 const howItWorks = url.searchParams.get("how-it-works");
                 if (howItWorks) {
                     document.getElementById("how-it-works").style.display = 'flex';
                 }
-                
+
                 url.searchParams.forEach((value, paramName) => {
                     logEvent(analytics, 'url_query', { param: paramName, value: value });
-                
+
                     url.searchParams.delete(paramName);
                 });
-                
+
                 // Update the URL without query parameters
                 window.history.replaceState({}, '', url);
 
@@ -723,18 +722,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function onScanSuccess(decodedText, decodedResult) {
         stopScanning();
-        logEvent(analytics, 'qr_scan', { result: decodedText });
         try {
             const url = new URL(decodedText);
             const loc = url.searchParams.get("loc");
             if (loc) {
                 checkLocation(loc);
+                logEvent(analytics, 'qr_scan', {
+                    result: success,
+                    text: decodedText,
+                    message: loc
+                });
             } else {
                 invalidQR();
+                logEvent(analytics, 'qr_scan', {
+                    result: fail,
+                    text: decodedText,
+                    message: "loc is null."
+                });
             }
         } catch (error) {
             console.error("Error parsing URL:", error);
             invalidQR();
+            logEvent(analytics, 'qr_scan', {
+                result: fail,
+                text: decodedText,
+                message: error.message
+            });
         }
         scanResult.style.display = 'flex';
         changeTab('tab1');
@@ -766,7 +779,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
                 });
-                logEvent(analytics, 'collect_success', { result: result.data });
+                logEvent(analytics, 'collect_success', {
+                    locationID: loc,
+                    result: result.data
+                });
                 scanLoading.style.display = 'none';
                 imageSuccess.style.display = 'flex';
                 scanMessage.textContent = result.data;
@@ -774,7 +790,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
             } else {
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
-                logEvent(analytics, 'collect_fail', { reason: "Unable to retrieve user location." });
+                logEvent(analytics, 'collect_fail', {
+                    locationID: loc,
+                    reason: "Unable to retrieve user location."
+                });
                 scanMessage.textContent = "Unable to retrieve user location.";
                 scanMessage.style.backgroundColor = '#ffdede';
             }
@@ -782,7 +801,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
             //console.error("Error adding points:", error);
             scanLoading.style.display = 'none';
             imageFail.style.display = 'flex';
-            logEvent(analytics, 'collect_fail', { reason: error.message });
+            logEvent(analytics, 'collect_fail', {
+                locationID: loc,
+                reason: error.message
+            });
             scanMessage.textContent = error.message;
             scanMessage.style.backgroundColor = '#ffdede';
         }
