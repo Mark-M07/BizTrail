@@ -728,25 +728,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (loc) {
                 checkLocation(loc);
                 logEvent(analytics, 'qr_scan', {
-                    result: "success",
-                    text: decodedText,
-                    message: loc
+                    scan_result: "success",
+                    scan_decoded_text: decodedText,
+                    scan_message: loc
                 });
             } else {
                 invalidQR();
                 logEvent(analytics, 'qr_scan', {
-                    result: fail,
-                    text: decodedText,
-                    message: "loc is null."
+                    scan_result: fail,
+                    scan_decoded_text: decodedText,
+                    scan_message: "loc is null."
                 });
             }
         } catch (error) {
             console.error("Error parsing URL:", error);
             invalidQR();
             logEvent(analytics, 'qr_scan', {
-                result: "fail",
-                text: decodedText,
-                message: error.message
+                scan_result: "fail",
+                scan_decoded_text: decodedText,
+                scan_message: error.message
             });
         }
         scanResult.style.display = 'flex';
@@ -780,8 +780,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     userAccuracy: userLocation.accuracy
                 });
                 logEvent(analytics, 'collect_success', {
-                    locationID: loc,
-                    result: result.data
+                    collect_location_ID: loc,
+                    collect_result_data: result.data
                 });
                 scanLoading.style.display = 'none';
                 imageSuccess.style.display = 'flex';
@@ -791,8 +791,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
                 logEvent(analytics, 'collect_fail', {
-                    locationID: loc,
-                    reason: "Unable to retrieve user location."
+                    collect_location_ID: loc,
+                    collect_error_message: "Unable to retrieve user location."
                 });
                 scanMessage.textContent = "Unable to retrieve user location.";
                 scanMessage.style.backgroundColor = '#ffdede';
@@ -802,8 +802,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             scanLoading.style.display = 'none';
             imageFail.style.display = 'flex';
             logEvent(analytics, 'collect_fail', {
-                locationID: loc,
-                reason: error.message
+                collect_location_ID: loc,
+                collect_error_message: error.message
             });
             scanMessage.textContent = error.message;
             scanMessage.style.backgroundColor = '#ffdede';
