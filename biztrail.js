@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebas
 import {
     getAnalytics,
     logEvent
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js";
+} from "https://www.gstatic.com/firebasejs/10.5.2/firebase-analytics.js";
 import {
     getAuth,
     createUserWithEmailAndPassword,
