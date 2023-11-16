@@ -680,6 +680,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             onScanSuccess
         ).then(() => {
             isScannerActive = true;
+            console.log("isScannerActive = true");
             isScannerTransitioning = false;
         }).catch((error) => {
             console.error("Failed to start QR code scanning: ", error);
@@ -692,6 +693,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         qrCodeScanner.stop()
             .then(() => {
                 isScannerActive = false;
+                console.log("isScannerActive = false");
                 isScannerTransitioning = false;
             })
             .catch((error) => {
@@ -701,18 +703,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        console.log("Test -1");
-        changeTab('tab1'); // Changing tab automatically stops the scanning
-        scanResult.style.display = 'flex';
-        const url = new URL(decodedText);
-        const loc = url.searchParams.get("loc");
         console.log("Test 0");
+        changeTab('tab1'); // Changing tab automatically stops the scanning
+        console.log("Test 1");
+        scanResult.style.display = 'flex';
+        console.log("Test 2");
+        const url = new URL(decodedText);
+        console.log("Test 3");
+        const loc = url.searchParams.get("loc");
+        console.log("Test 4");
         if (loc) {
             checkLocation(loc);
-            console.log("Test 1");
+            console.log("Test 5");
         } else {
             //console.log("param loc does not exist");
-            console.log("Test 2");
+            console.log("Test 6");
             scanLoading.style.display = 'none';
             imageSuccess.style.display = 'none';
             imageFail.style.display = 'flex';
