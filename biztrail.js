@@ -724,12 +724,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        checkScanResult(decodedText);
-    }
-
-    function checkScanResult(decodedText){
-        console.log("Test 0");
-        changeTab('tab1'); // Changing tab automatically stops the scanning
         console.log("Test 1");
         scanResult.style.display = 'flex';
         console.log("Test 2");
@@ -750,6 +744,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             scanMessage.textContent = "Invalid QR or code word.";
             scanMessage.style.backgroundColor = '#ffdede';
         }
+        changeTab('tab1'); // Changing tab automatically stops the scanning
     }
 
     async function checkLocation(loc) {
