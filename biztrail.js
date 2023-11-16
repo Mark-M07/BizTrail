@@ -703,10 +703,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         scanResult.style.display = 'flex';
         const url = new URL(decodedText);
         const loc = url.searchParams.get("loc");
+        console.log("Test 0");
         if (loc) {
             checkLocation(loc);
+            console.log("Test 1");
         } else {
             //console.log("param loc does not exist");
+            console.log("Test 2");
             scanLoading.style.display = 'none';
             imageSuccess.style.display = 'none';
             imageFail.style.display = 'flex';
