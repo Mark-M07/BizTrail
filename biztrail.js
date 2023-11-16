@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (loc) {
                 checkLocation(loc);
                 logEvent(analytics, 'qr_scan', {
-                    result: success,
+                    result: "success",
                     text: decodedText,
                     message: loc
                 });
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             console.error("Error parsing URL:", error);
             invalidQR();
             logEvent(analytics, 'qr_scan', {
-                result: fail,
+                result: "fail",
                 text: decodedText,
                 message: error.message
             });
