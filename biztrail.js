@@ -59,6 +59,7 @@ const intersectionObserver = new IntersectionObserver((entries) => {
 });
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM Loaded");
     // Ensure the DOM is fully loaded
     const eventName = document.getElementById('event-name').dataset.eventName;
     const signupForm = document.getElementById('signup-form');
@@ -395,6 +396,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function changeTab(targetTabId) {
+        console.log("changeTab");
         // Deactivate all tabs
         document.querySelectorAll(".tabcontent").forEach(function (tab) {
             tab.classList.remove('active-tab');
