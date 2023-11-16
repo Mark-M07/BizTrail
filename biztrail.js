@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const loginForm = document.getElementById('login-form');
     const accountForm = document.getElementById('account-form');
     const codeForm = document.getElementById('code-form');
+    const codeEntryModal = document.getElementById('code-entry');
     const eventPoints = document.getElementById("event-points");
     const eventTickets = document.getElementById("event-tickets");
     const pointsRemaining = document.getElementById("points-remaining");
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         const code = codeForm['code-word'].value;
 
+        codeEntryModal.style.display = 'none';
         changeTab('tab1');
         scanResult.style.display = 'flex';
         checkLocation(code);
