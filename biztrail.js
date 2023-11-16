@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const signupForm = document.getElementById('signup-form');
     const loginForm = document.getElementById('login-form');
     const accountForm = document.getElementById('account-form');
+    const codeForm = document.getElementById('code-form');
     const eventPoints = document.getElementById("event-points");
     const eventTickets = document.getElementById("event-tickets");
     const pointsRemaining = document.getElementById("points-remaining");
@@ -144,6 +145,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
             accountMessage.textContent = "Error updating profile.";
             accountMessage.style.backgroundColor = '#ffdede';
         }
+    });
+
+    codeForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        e.stopPropagation(); // Stop event propagation
+
+        const code = codeForm['code-word'].value;
+
+        changeTab('tab1');
+        scanResult.style.display = 'flex';
+        checkLocation(code);
+        logEvent(analytics, 'code_entry', { code: code });
     });
 
     document.getElementById("reset-password").addEventListener("click", () => {
