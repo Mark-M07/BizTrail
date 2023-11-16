@@ -724,6 +724,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
+        stopScanning();
+        console.log(`Scanned QR Code: ${decodedText}`);
         console.log("Test 1");
         scanResult.style.display = 'flex';
         console.log("Test 2");
