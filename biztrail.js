@@ -725,21 +725,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function onScanSuccess(decodedText, decodedResult) {
         stopScanning();
-        console.log(`Scanned QR Code: ${decodedText}`);
-        console.log("Test 1");
-        scanResult.style.display = 'flex';
-        console.log("Test 2");
-        //const url = new URL(decodedText);
-        console.log("Test 3");
-        //const loc = url.searchParams.get("loc");
-        const loc = "wattsFresh";
-        console.log("Test 4");
-        if (loc) {
-            checkLocation(loc);
-            console.log("Test 5");
-        } else {
-            //console.log("param loc does not exist");
-            console.log("Test 6");
+        try {
+            const url = new URL(decodedText);
+            const loc = url.searchParams.get("loc");
+            if (loc) {
+                checkLocation(loc);
+            } else {
+                scanLoading.style.display = 'none';
+                imageSuccess.style.display = 'none';
+                imageFail.style.display = 'flex';
+                scanMessage.style.display = 'block';
+                scanMessage.textContent = "Invalid QR or code word.";
+                scanMessage.style.backgroundColor = '#ffdede';
+            }
+        } catch (error) {
+            console.error("Error parsing URL:", error);
             scanLoading.style.display = 'none';
             imageSuccess.style.display = 'none';
             imageFail.style.display = 'flex';
@@ -747,7 +747,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             scanMessage.textContent = "Invalid QR or code word.";
             scanMessage.style.backgroundColor = '#ffdede';
         }
-        changeTab('tab1'); // Changing tab automatically stops the scanning
+        scanResult.style.display = 'flex';
+        changeTab('tab1');
     }
 
     async function checkLocation(loc) {
