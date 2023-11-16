@@ -724,6 +724,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function onScanSuccess(decodedText, decodedResult) {
+        checkScanResult(decodedText);
+    }
+
+    function checkScanResult(decodedText){
         console.log("Test 0");
         changeTab('tab1'); // Changing tab automatically stops the scanning
         console.log("Test 1");
