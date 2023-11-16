@@ -1,5 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js";
+import { 
+    getAnalytics,
+    logEvent
+} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-analytics.js";
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -176,23 +179,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             if (eventData) {
                 const url = new URL(window.location.href);
-                // If page loads with loc param check location
+                
                 const loc = url.searchParams.get("loc");
                 if (loc) {
-                    changeTab('tab1'); // Changing tab automatically stops the scanning
+                    changeTab('tab1');
                     scanResult.style.display = 'flex';
                     checkLocation(loc);
-                } else {
-                    const howItWorks = url.searchParams.get("how-it-works");
-                    if (howItWorks) {
-                        document.getElementById("how-it-works").style.display = 'flex';
-                    }
+                } 
+                
+                const howItWorks = url.searchParams.get("how-it-works");
+                if (howItWorks) {
+                    document.getElementById("how-it-works").style.display = 'flex';
                 }
-
-                // Remove any query params
-                url.searchParams.forEach((_, paramName) => url.searchParams.delete(paramName));
-
-                // Update the URL without reloading the page
+                
+                url.searchParams.forEach((value, paramName) => {
+                    logEvent(analytics, 'url_query', { param: paramName, value: value });
+                
+                    url.searchParams.delete(paramName);
+                });
+                
+                // Update the URL without query parameters
                 window.history.replaceState({}, '', url);
 
                 // Countdown timer
@@ -695,7 +701,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             onScanSuccess
         ).then(() => {
             isScannerActive = true;
-            console.log("isScannerActive = true");
             isScannerTransitioning = false;
         }).catch((error) => {
             console.error("Failed to start QR code scanning: ", error);
@@ -708,7 +713,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         qrCodeScanner.stop()
             .then(() => {
                 isScannerActive = false;
-                console.log("isScannerActive = false");
                 isScannerTransitioning = false;
             })
             .catch((error) => {
@@ -719,6 +723,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function onScanSuccess(decodedText, decodedResult) {
         stopScanning();
+        logEvent(analytics, 'qr_scan', { result: decodedText });
         try {
             const url = new URL(decodedText);
             const loc = url.searchParams.get("loc");
@@ -761,6 +766,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     userLng: userLocation.longitude,
                     userAccuracy: userLocation.accuracy
                 });
+                logEvent(analytics, 'collect_success', { result: result.data });
                 scanLoading.style.display = 'none';
                 imageSuccess.style.display = 'flex';
                 scanMessage.textContent = result.data;
@@ -768,6 +774,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             } else {
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
+                logEvent(analytics, 'collect_fail', { reason: "Unable to retrieve user location." });
                 scanMessage.textContent = "Unable to retrieve user location.";
                 scanMessage.style.backgroundColor = '#ffdede';
             }
@@ -775,6 +782,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             //console.error("Error adding points:", error);
             scanLoading.style.display = 'none';
             imageFail.style.display = 'flex';
+            logEvent(analytics, 'collect_fail', { reason: error.message });
             scanMessage.textContent = error.message;
             scanMessage.style.backgroundColor = '#ffdede';
         }
