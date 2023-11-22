@@ -48,6 +48,7 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 auth.languageCode = 'en';
 const googleProvider = new GoogleAuthProvider();
+const appleProvider = new OAuthProvider('apple.com');
 const functions = getFunctions(app, 'australia-southeast1');
 const updateUserProfile = httpsCallable(functions, 'updateUserProfile');
 const addPoints = httpsCallable(functions, 'addPoints');
@@ -169,6 +170,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Add event listeners to both Google login buttons
     document.querySelectorAll("[id^='google-login-button-']").forEach(button => {
         button.addEventListener("click", googleSignIn);
+    });
+
+    // Add event listeners to both Apple login buttons
+    document.querySelectorAll("[id^='apple-login-button-']").forEach(button => {
+        button.addEventListener("click", appleSignIn);
     });
 
     // Logout user when the logout button is clicked
@@ -877,6 +883,18 @@ const emailSignIn = async (email, password) => {
 const googleSignIn = async () => {
     try {
         await signInWithRedirect(auth, googleProvider);
+        // The signed-in user info is handled by onAuthStateChanged
+    } catch (error) {
+
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+    }
+};
+
+// Handle Apple sign-in for both buttons
+const appleSignIn = async () => {
+    try {
+        await signInWithRedirect(auth, appleProvider);
         // The signed-in user info is handled by onAuthStateChanged
     } catch (error) {
 
