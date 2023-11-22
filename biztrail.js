@@ -9,6 +9,7 @@ import {
     signInWithEmailAndPassword,
     signInWithRedirect,
     GoogleAuthProvider,
+    OAuthProvider,
     onAuthStateChanged,
     signOut,
     sendPasswordResetEmail,
