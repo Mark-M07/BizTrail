@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 return {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy // Include accuracy
+                    //accuracy: position.coords.accuracy // Include accuracy
                 };
             } catch (error) {
                 console.error("Error obtaining geolocation:", error);
@@ -792,14 +792,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         scanMessage.textContent = "Checking QR code...";
         scanMessage.style.backgroundColor = '#e0e0e0';
         try {
-            let userLocation = await getUserLocation();
-            if (userLocation) {
+            //let userLocation = await getUserLocation();
+            //if (userLocation) {
                 const result = await addPoints({
                     eventName: eventName,
                     locationId: loc,
-                    userLat: userLocation.latitude,
-                    userLng: userLocation.longitude,
-                    userAccuracy: userLocation.accuracy
+                    userLat: -37.24909666554568,
+                    userLng: 144.45323073712373
+                    //userLat: userLocation.latitude,
+                    //userLng: userLocation.longitude,
+                    //userAccuracy: userLocation.accuracy
                 });
                 logEvent(analytics, 'collect_success', {
                     collect_location_ID: loc,
@@ -809,7 +811,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 imageSuccess.style.display = 'flex';
                 scanMessage.textContent = result.data;
                 scanMessage.style.backgroundColor = '#deffde';
-            } else {
+            /*} else {
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
                 logEvent(analytics, 'collect_fail', {
@@ -818,7 +820,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
                 scanMessage.textContent = "Unable to retrieve user location.";
                 scanMessage.style.backgroundColor = '#ffdede';
-            }
+            }*/
         } catch (error) {
             //console.error("Error adding points:", error);
             scanLoading.style.display = 'none';
