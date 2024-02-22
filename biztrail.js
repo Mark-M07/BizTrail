@@ -961,9 +961,35 @@ const emailSignIn = async (email, password) => {
     }
 };
 
+const googleSignIn = async () => {
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+
+        // The signed-in user info.
+        const user = result.user;
+
+        // Handle the user info as needed
+        console.log("User signed in:", user);
+    } catch (error) {
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+
+        // ...
+    }
+};
 
 // Handle Google sign-in for both buttons
-const googleSignIn = async () => {
+/*const googleSignIn = async () => {
     try {
         await signInWithRedirect(auth, googleProvider);
         // The signed-in user info is handled by onAuthStateChanged
@@ -972,7 +998,7 @@ const googleSignIn = async () => {
         console.error("Authentication error:", error);
         // Handle Errors here.
     }
-};
+};*/
 
 const appleSignIn = async () => {
     try {
