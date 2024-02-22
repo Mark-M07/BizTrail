@@ -7,6 +7,7 @@ import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    signInWithPopup,
     signInWithRedirect,
     GoogleAuthProvider,
     OAuthProvider,
@@ -683,10 +684,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     /**
- * Get user's geolocation coordinates.
- * Returns a LatLng object if successful, otherwise null.
- */
-    async function getUserLocation() {
+     * Get user's geolocation coordinates.
+     * Returns a LatLng object if successful, otherwise null.
+     */
+    /*async function getUserLocation() {
         if ("geolocation" in navigator) {
             const options = {
                 enableHighAccuracy: true,
@@ -710,7 +711,81 @@ document.addEventListener('DOMContentLoaded', (event) => {
             alert("Geolocation not supported by this browser.");
         }
         return null;
+    }*/
+
+    /**
+     * Get user's geolocation coordinates.
+     * Returns an object with latitude and longitude if successful, otherwise null.
+     */
+    async function getUserLocation() {
+        if ("geolocation" in navigator) {
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+
+            // Function to handle success in geolocation
+            function success(position) {
+                return {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    // Include accuracy if needed
+                    // accuracy: position.coords.accuracy
+                };
+            }
+
+            // Function to handle errors in geolocation
+            function error(err) {
+                console.error("Error obtaining geolocation:", err);
+                return null;
+            }
+
+            // Check for Permissions API availability and query geolocation permission
+            if ("permissions" in navigator) {
+                try {
+                    const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+
+                    if (permissionStatus.state === "granted") {
+                        return new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(
+                                position => resolve(success(position)),
+                                err => reject(error(err)),
+                                options
+                            );
+                        });
+                    } else if (permissionStatus.state === "prompt") {
+                        return new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(
+                                position => resolve(success(position)),
+                                err => reject(error(err)),
+                                options
+                            );
+                        });
+                    } else {
+                        console.log("Geolocation permission denied");
+                        return null;
+                    }
+                } catch (err) {
+                    console.error("Error querying geolocation permission:", err);
+                    return null;
+                }
+            } else {
+                // Fallback for browsers that don't support the Permissions API
+                return new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        position => resolve(success(position)),
+                        err => reject(error(err)),
+                        options
+                    );
+                });
+            }
+        } else {
+            alert("Geolocation not supported by this browser.");
+            return null;
+        }
     }
+
 
     function startScanning() {
         isScannerTransitioning = true;
@@ -784,6 +859,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         scanMessage.style.backgroundColor = '#ffdede';
     }
 
+    /**
+     * Check location on scan or url query.
+     *
+     * @param {string} loc - Scan code / URL query.
+     */
     async function checkLocation(loc) {
         scanMessage.style.display = 'block';
         scanLoading.style.display = 'block';
@@ -794,23 +874,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
         try {
             //let userLocation = await getUserLocation();
             //if (userLocation) {
-                const result = await addPoints({
-                    eventName: eventName,
-                    locationId: loc,
-                    userLat: -37.24909666554568,
-                    userLng: 144.45323073712373
-                    //userLat: userLocation.latitude,
-                    //userLng: userLocation.longitude,
-                    //userAccuracy: userLocation.accuracy
-                });
-                logEvent(analytics, 'collect_success', {
-                    collect_location_ID: loc,
-                    collect_result_data: result.data
-                });
-                scanLoading.style.display = 'none';
-                imageSuccess.style.display = 'flex';
-                scanMessage.textContent = result.data;
-                scanMessage.style.backgroundColor = '#deffde';
+            const result = await addPoints({
+                eventName: eventName,
+                locationId: loc,
+                userLat: -37.24909666554568,
+                userLng: 144.45323073712373
+                //userLat: userLocation.latitude,
+                //userLng: userLocation.longitude,
+                //userAccuracy: userLocation.accuracy
+            });
+            logEvent(analytics, 'collect_success', {
+                collect_location_ID: loc,
+                collect_result_data: result.data
+            });
+            scanLoading.style.display = 'none';
+            imageSuccess.style.display = 'flex';
+            scanMessage.textContent = result.data;
+            scanMessage.style.backgroundColor = '#deffde';
             /*} else {
                 scanLoading.style.display = 'none';
                 imageFail.style.display = 'flex';
@@ -894,8 +974,39 @@ const googleSignIn = async () => {
     }
 };
 
-// Handle Apple sign-in for both buttons
 const appleSignIn = async () => {
+    try {
+        const result = await signInWithPopup(auth, appleProvider);
+
+        // The signed-in user info.
+        const user = result.user;
+
+        // Apple credential
+        const credential = OAuthProvider.credentialFromResult(result);
+        const accessToken = credential.accessToken;
+        const idToken = credential.idToken;
+
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+
+        // Handle the user info as needed
+        console.log("User signed in:", user);
+    } catch (error) {
+        console.error("Authentication error:", error);
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The credential that was used.
+        const credential = OAuthProvider.credentialFromError(error);
+
+        // ...
+    }
+};
+
+// Handle Apple sign-in for both buttons
+/*const appleSignIn = async () => {
     try {
         await signInWithRedirect(auth, appleProvider);
         // The signed-in user info is handled by onAuthStateChanged
@@ -904,4 +1015,4 @@ const appleSignIn = async () => {
         console.error("Authentication error:", error);
         // Handle Errors here.
     }
-};
+};*/
