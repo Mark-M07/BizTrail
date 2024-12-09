@@ -1,0 +1,74 @@
+name: biztrail
+description: "BizTrail - Local Business Discovery"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI and Core
+  permission_handler: ^11.0.1
+  cupertino_icons: ^1.0.8
+  mobile_scanner: ^3.5.6
+  google_sign_in: ^6.1.6
+  sign_in_with_apple: ^5.0.0
+  google_maps_flutter: ^2.5.3
+  cached_network_image: ^3.3.0
+  url_launcher: ^6.2.1
+  share_plus: ^7.2.1
+  
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  firebase_analytics: ^10.7.4
+  cloud_firestore: ^4.13.6
+  cloud_functions: ^4.5.8 
+  
+  # State Management & Utils
+  provider: ^6.1.1
+  intl: ^0.18.1
+  geolocator: ^10.1.0
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  # Assets configuration
+  assets:
+    # App branding
+    - assets/images/logo/
+    
+    # Default images and placeholders
+    - assets/images/placeholders/
+    
+    # Icons and UI elements
+    - assets/images/icons/
+    
+    # Location images (if any stored locally)
+    - assets/images/locations/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo/biztrail_logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo/biztrail_logo.png"
+  adaptive_icon_mask: true
+  min_sdk_android: 21
+
+  # Fonts configuration (uncomment and modify if you want to use custom fonts)
+  # fonts:
+  #   - family: BizTrail
+  #     fonts:
+  #       - asset: assets/fonts/BizTrail-Regular.ttf
+  #       - asset: assets/fonts/BizTrail-Bold.ttf
+  #         weight: 700

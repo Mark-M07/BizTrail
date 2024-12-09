@@ -1,0 +1,69 @@
+plugins {
+    id "com.android.application"
+    // START: FlutterFire Configuration
+    id 'com.google.gms.google-services'
+    // END: FlutterFire Configuration
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.example.biztrail"
+    compileSdk = 34
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    defaultConfig {
+        applicationId = "com.example.biztrail"
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+        multiDexEnabled true
+        resValue "string", "google_maps_key", "AIzaSyCkI7_eaRpS3YcXXt29lsFCdRy4zUZ59yk"
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+        }
+        debug {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
+            pickFirsts += ['androidsupportmultidexversion.txt']
+        }
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries = false
+    }
+}
+
+dependencies {
+    implementation "com.google.android.gms:play-services-auth:20.7.0"
+    implementation "com.google.android.gms:play-services-maps:18.2.0"
+    implementation "com.google.android.gms:play-services-location:21.0.1"
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
+
+flutter {
+    source = "../.."
+}
