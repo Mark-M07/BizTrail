@@ -42,7 +42,10 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
   void initializeController() {
     if (mounted && controller == null) {
-      controller = MobileScannerController();
+      controller = MobileScannerController(
+        facing: CameraFacing.back,
+        torchEnabled: false,
+      );
       setState(() {});
     }
   }
@@ -58,6 +61,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         if (controller != null)
           MobileScanner(
             controller: controller!,
+            errorBuilder: (context, error, child) {
+              return Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Error: ${error.errorCode}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            },
             onDetect: (capture) {
               final List<Barcode> barcodes = capture.barcodes;
               if (!isScanned && barcodes.isNotEmpty) {
@@ -82,45 +96,43 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               }
             },
           ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: ValueListenableBuilder(
-                  valueListenable:
-                      controller?.torchState ?? ValueNotifier(TorchState.off),
-                  builder: (context, state, child) {
-                    switch (state) {
-                      case TorchState.off:
-                        return const Icon(Icons.flash_off, color: Colors.white);
-                      case TorchState.on:
-                        return const Icon(Icons.flash_on, color: Colors.white);
-                    }
-                  },
-                ),
-                onPressed: () => controller?.toggleTorch(),
+        SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              color: Colors.black26,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  if (controller != null) ...[
+                    ValueListenableBuilder<MobileScannerState>(
+                      valueListenable: controller!,
+                      builder: (context, state, child) {
+                        return IconButton(
+                          color: Colors.white,
+                          icon: state.torchState == TorchState.on
+                              ? const Icon(Icons.flash_on)
+                              : const Icon(Icons.flash_off),
+                          onPressed: () => controller?.toggleTorch(),
+                        );
+                      },
+                    ),
+                    ValueListenableBuilder<MobileScannerState>(
+                      valueListenable: controller!,
+                      builder: (context, state, child) {
+                        return IconButton(
+                          color: Colors.white,
+                          icon: state.cameraDirection == CameraFacing.front
+                              ? const Icon(Icons.camera_front)
+                              : const Icon(Icons.camera_rear),
+                          onPressed: () => controller?.switchCamera(),
+                        );
+                      },
+                    ),
+                  ],
+                ],
               ),
-              IconButton(
-                icon: ValueListenableBuilder(
-                  valueListenable: controller?.cameraFacingState ??
-                      ValueNotifier(CameraFacing.back),
-                  builder: (context, state, child) {
-                    switch (state) {
-                      case CameraFacing.front:
-                        return const Icon(Icons.camera_front,
-                            color: Colors.white);
-                      case CameraFacing.back:
-                        return const Icon(Icons.camera_rear,
-                            color: Colors.white);
-                    }
-                  },
-                ),
-                onPressed: () => controller?.switchCamera(),
-              ),
-            ],
+            ),
           ),
         ),
         Align(
@@ -166,7 +178,13 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       case AppLifecycleState.resumed:
         initializeController();
         break;
-      default:
+      case AppLifecycleState.detached:
+        controller?.dispose();
+        controller = null;
+        break;
+      case AppLifecycleState.hidden:
+        controller?.dispose();
+        controller = null;
         break;
     }
   }

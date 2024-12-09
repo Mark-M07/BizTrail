@@ -51,19 +51,40 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+
+    <!-- Google Sign-In Configuration -->
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>com.example.biztrail</string>
+                <string>com.googleusercontent.apps.972839717909-ki9s2bjnm8s1fjk5ec56lc7l2sotur56</string>
             </array>
         </dict>
     </array>
+
+    <!-- Firebase Permissions -->
+    <key>FirebaseCrashlyticsCollectionEnabled</key>
+    <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
+    <!-- Sign-In with Apple -->
+    <key>ASAuthorizationAppleID</key>
+    <string>We need to authenticate your identity to provide a personalized experience.</string>
+
+    <!-- Localization -->
     <key>CFBundleLocalizations</key>
     <array>
         <string>en</string>
     </array>
+
+    <!-- Google API Key -->
     <key>GIDClientID</key>
     <string>972839717909-ki9s2bjnm8s1fjk5ec56lc7l2sotur56.apps.googleusercontent.com</string>
 </dict>

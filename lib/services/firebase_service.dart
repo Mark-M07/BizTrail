@@ -7,7 +7,8 @@ class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instanceFor(region: 'australia-southeast1');
+  final FirebaseFunctions _functions =
+      FirebaseFunctions.instanceFor(region: 'australia-southeast1');
 
   // Auth methods
   Future<UserCredential> signUpWithEmailPassword(
@@ -63,7 +64,7 @@ class FirebaseService {
 
   // Analytics methods
   Future<void> logCustomEvent(
-      String eventName, Map<String, dynamic>? parameters) async {
+      String eventName, Map<String, Object>? parameters) async {
     await _analytics.logEvent(
       name: eventName,
       parameters: parameters,
