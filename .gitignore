@@ -61,7 +61,7 @@ GoogleService-Info.plist
 .tags*
 **/.vagrant/
 **/DerivedData/
-Icon?
+Icon[\r]
 **/Pods/
 **/.symlinks/
 profile

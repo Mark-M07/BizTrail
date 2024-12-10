@@ -38,3 +38,29 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  # Assets configuration
+  assets:
+    # App branding
+    - assets/images/logo/
+    
+    # Default images and placeholders
+    - assets/images/placeholders/
+    
+    # Icons and UI elements
+    - assets/images/icons/
+    
+    # Location images (if any stored locally)
+    - assets/images/locations/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo/biztrail_logo.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo/biztrail_logo.png"
+  adaptive_icon_mask: true
+  min_sdk_android: 23

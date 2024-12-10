@@ -67,6 +67,7 @@ class ProfileButton extends StatelessWidget {
     } else {
       return CircleAvatar(
         backgroundColor: Colors.blue.shade100,
+        radius: 16,
         child: Text(
           (user?.email?[0] ?? 'U').toUpperCase(),
           style: const TextStyle(
@@ -74,7 +75,6 @@ class ProfileButton extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        radius: 16,
       );
     }
   }
