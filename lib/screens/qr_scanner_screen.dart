@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../screens/settings_screen.dart';
 
 class QRScannerScreen extends StatefulWidget {
   final bool isVisible;
@@ -17,13 +19,14 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     with WidgetsBindingObserver {
   MobileScannerController? controller;
   bool isScanned = false;
+  bool? hasPermission;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (widget.isVisible) {
-      initializeController();
+      _checkAndInitializeScanner();
     }
   }
 
@@ -32,28 +35,114 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     super.didUpdateWidget(oldWidget);
     if (widget.isVisible != oldWidget.isVisible) {
       if (widget.isVisible) {
-        initializeController();
+        _checkAndInitializeScanner();
       } else {
-        controller?.dispose();
-        controller = null;
+        _disposeScanner();
       }
     }
   }
 
-  void initializeController() {
+  Future<void> _checkAndInitializeScanner() async {
+    final status = await Permission.camera.status;
+
+    if (!mounted) return;
+
+    if (status.isGranted) {
+      setState(() {
+        hasPermission = true;
+      });
+      _initializeScanner();
+    } else if (status.isDenied) {
+      final result = await Permission.camera.request();
+      if (!mounted) return;
+
+      setState(() {
+        hasPermission = result.isGranted;
+      });
+      if (result.isGranted) {
+        _initializeScanner();
+      }
+    } else {
+      setState(() {
+        hasPermission = false;
+      });
+    }
+  }
+
+  void _initializeScanner() {
     if (mounted && controller == null) {
       controller = MobileScannerController(
         facing: CameraFacing.back,
         torchEnabled: false,
       );
-      setState(() {});
+      controller!.start().catchError((error) {
+        debugPrint('Failed to start scanner: $error');
+        if (mounted) {
+          setState(() {
+            hasPermission = false;
+          });
+        }
+        return null;
+      });
     }
+  }
+
+  void _disposeScanner() {
+    controller?.stop();
+    controller?.dispose();
+    controller = null;
   }
 
   @override
   Widget build(BuildContext context) {
     if (!widget.isVisible) {
       return const SizedBox.shrink();
+    }
+
+    if (hasPermission == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (!hasPermission!) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.security_update_warning,
+                  size: 64, color: Colors.orange),
+              const SizedBox(height: 24),
+              const Text(
+                'Permissions Required',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'BizTrail needs camera access to scan QR codes and precise location to verify your presence at business locations.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    builder: (context) => const SettingsScreen(),
+                  );
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text('Open Settings'),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return Stack(
@@ -160,7 +249,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controller?.dispose();
+    _disposeScanner();
     super.dispose();
   }
 
@@ -172,19 +261,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     switch (state) {
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
-        controller?.dispose();
-        controller = null;
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _disposeScanner();
         break;
       case AppLifecycleState.resumed:
-        initializeController();
-        break;
-      case AppLifecycleState.detached:
-        controller?.dispose();
-        controller = null;
-        break;
-      case AppLifecycleState.hidden:
-        controller?.dispose();
-        controller = null;
+        // Add slight delay when resuming to ensure camera system is ready
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _checkAndInitializeScanner();
+          }
+        });
         break;
     }
   }

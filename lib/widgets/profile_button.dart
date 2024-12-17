@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../screens/settings_screen.dart';
 
 class ProfileButton extends StatelessWidget {
   final AuthService _authService = AuthService();
@@ -48,7 +49,15 @@ class ProfileButton extends StatelessWidget {
             // TODO: Navigate to profile screen
             break;
           case 'settings':
-            // TODO: Navigate to settings screen
+            // Show settings screen as a modal
+            if (context.mounted) {
+              await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (context) => const SettingsScreen(),
+              );
+            }
             break;
           case 'logout':
             await _authService.signOut();
