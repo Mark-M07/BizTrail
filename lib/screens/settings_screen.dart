@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
+import 'package:flutter/services.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +16,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   final Map<Permission, bool> _isPreciseLocationDeniedMap = {};
   bool _isLoading = true;
   bool _returnedFromSettings = false;
+
+  static const MethodChannel _accuracyChannel =
+      MethodChannel('com.biztrail.app/location_accuracy');
 
   @override
   void initState() {
@@ -51,21 +55,35 @@ class _SettingsScreenState extends State<SettingsScreen>
       Permission.locationWhenInUse,
     ];
 
+    // Get current statuses
     final statuses = await Future.wait(
       permissions.map((permission) => permission.status),
     );
 
     final newStatuses = Map.fromIterables(permissions, statuses);
-
-    // Check precise location status for both iOS and Android
-    final preciseLocationStatus = await Permission.location.status;
     final locationStatus = newStatuses[Permission.locationWhenInUse];
 
-    if (locationStatus?.isGranted == true && !preciseLocationStatus.isGranted) {
-      _isPreciseLocationDeniedMap[Permission.locationWhenInUse] = true;
-    } else {
-      _isPreciseLocationDeniedMap[Permission.locationWhenInUse] = false;
+    // Determine if precise location is denied
+    bool isPreciseDenied = false;
+
+    if (locationStatus?.isGranted == true) {
+      if (Platform.isIOS) {
+        // On iOS, check via the method channel
+        final accuracy = await _accuracyChannel.invokeMethod<String>('checkLocationAccuracy');
+        if (accuracy == 'reducedAccuracy') {
+          isPreciseDenied = true;
+        }
+      } else {
+        // On Android, check if Permission.location (fine) is granted.
+        // If not granted, it means we only have coarse location.
+        final preciseLocationStatus = await Permission.location.status;
+        if (!preciseLocationStatus.isGranted) {
+          isPreciseDenied = true;
+        }
+      }
     }
+
+    _isPreciseLocationDeniedMap[Permission.locationWhenInUse] = isPreciseDenied;
 
     setState(() {
       _permissionStatuses = newStatuses;
@@ -85,31 +103,43 @@ class _SettingsScreenState extends State<SettingsScreen>
           _showCameraPermissionDialog();
         }
       } else if (permission == Permission.locationWhenInUse) {
-        // First, set loading state
         setState(() {
           _isLoading = true;
         });
 
-        // Request coarse location
+        // Request coarse/when-in-use permission
         final coarseResult = await Permission.locationWhenInUse.request();
 
-        // Immediately check precise location status
-        final preciseResult = await Permission.location.status;
+        bool isPreciseDenied = false;
+        if (coarseResult.isGranted) {
+          if (Platform.isIOS) {
+            // Check accuracy via platform channel on iOS
+            final accuracy =
+                await _accuracyChannel.invokeMethod<String>('checkLocationAccuracy');
+            if (accuracy == 'reducedAccuracy') {
+              isPreciseDenied = true;
+            }
+          } else {
+            // On Android, check fine location permission
+            final preciseResult = await Permission.location.status;
+            if (!preciseResult.isGranted) {
+              isPreciseDenied = true;
+            }
+          }
+        }
 
-        // Update both statuses together
         setState(() {
           _permissionStatuses[permission] = coarseResult;
-          _isPreciseLocationDeniedMap[permission] =
-              coarseResult.isGranted && !preciseResult.isGranted;
+          _isPreciseLocationDeniedMap[permission] = isPreciseDenied;
           _isLoading = false;
         });
 
-        if (!coarseResult.isGranted || !preciseResult.isGranted) {
+        if (!coarseResult.isGranted || isPreciseDenied) {
           _showPreciseLocationDialog();
           return;
         }
 
-        // Final permission check to ensure consistency
+        // Ensure consistency
         await _loadPermissions();
       }
     } catch (e) {
