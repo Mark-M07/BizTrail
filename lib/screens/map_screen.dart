@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io' show Platform;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -49,28 +50,28 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _requestLocationPermission() async {
     final status = await Permission.locationWhenInUse.request();
     if (!status.isGranted) {
-      print('Location permission not granted');
+      debugPrint('Location permission not granted');
       return;
     }
-    print('Location permission granted');
+    debugPrint('Location permission granted');
   }
 
   Future<void> _debugPrintFirestoreData() async {
     try {
-      print('Fetching Firestore data...');
+      debugPrint('Fetching Firestore data...');
       final locations = await FirebaseFirestore.instance
           .collection('events')
           .doc('businessKyneton')
           .collection('locations')
           .get();
 
-      print('Number of locations found: ${locations.docs.length}');
+      debugPrint('Number of locations found: ${locations.docs.length}');
       for (var doc in locations.docs) {
         final data = doc.data();
-        print('Location: ${data['title']}, Position: ${data['position']}');
+        debugPrint('Location: ${data['title']}, Position: ${data['position']}');
       }
     } catch (e) {
-      print('Error fetching Firestore data: $e');
+      debugPrint('Error fetching Firestore data: $e');
     }
   }
 
@@ -120,7 +121,7 @@ class _MapScreenState extends State<MapScreen> {
         );
       }
     } catch (e) {
-      print('Error loading locations: $e');
+      debugPrint('Error loading locations: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -152,6 +153,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Platform-specific map controls
     return Stack(
       children: [
         GoogleMap(
@@ -162,8 +164,8 @@ class _MapScreenState extends State<MapScreen> {
           markers: _markers,
           myLocationButtonEnabled: true,
           myLocationEnabled: true,
-          zoomControlsEnabled: true,
-          mapToolbarEnabled: true,
+          zoomControlsEnabled: Platform.isAndroid, // Hide on iOS
+          mapToolbarEnabled: Platform.isAndroid, // Hide on iOS
           onMapCreated: _onMapCreated,
         ),
         if (_isLoading)

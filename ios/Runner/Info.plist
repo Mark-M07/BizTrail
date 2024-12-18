@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+    <key>GMSApiKey</key>
+    <string>AIzaSyCkI7_eaRpS3YcXXt29lsFCdRy4zUZ59yk</string>
     <key>ASAuthorizationAppleID</key>
     <string>We need to authenticate your identity to provide a personalized experience.</string>
     <key>CADisableMinimumFrameDurationOnPhone</key>
@@ -53,17 +57,9 @@
         <true/>
     </dict>
     <key>NSCameraUsageDescription</key>
-    <string>We need camera access to scan QR codes</string>
+    <string>Required for scanning QR codes at business locations</string>    
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>To verify your presence accurately at business locations, we only need location access while the app is in use. Please enable precise location for the best experience.</string>
-
-    <!-- Optional: Add temporary usage description if needed for requesting full accuracy -->
-    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
-    <dict>
-        <key>PreciseLocation</key>
-        <string>We need full accuracy to confirm your exact presence at business locations and provide better location-based features.</string>
-    </dict>
-
+    <string>Required to verify your presence at business locations</string>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UIBackgroundModes</key>
