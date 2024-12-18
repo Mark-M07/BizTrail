@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:io' show Platform;
 import '../screens/settings_screen.dart';
-import 'package:flutter/services.dart';
+import '../utils/permission_helper.dart';
 
 class QRScannerScreen extends StatefulWidget {
   final bool isVisible;
@@ -22,9 +20,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   MobileScannerController? controller;
   bool isScanned = false;
   bool? hasPermission;
-
-  static const MethodChannel _accuracyChannel =
-      MethodChannel('com.biztrail.app/location_accuracy');
 
   @override
   void initState() {
@@ -48,64 +43,16 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   }
 
   Future<void> _checkAndInitializeScanner() async {
-    // Check camera permission
-    final cameraStatus = await Permission.camera.status;
+    final hasPermissions = await PermissionHelper.checkAllPermissions();
     if (!mounted) return;
 
-    if (!cameraStatus.isGranted) {
-      // Request camera permission if not granted
-      final newCameraStatus = await Permission.camera.request();
-      if (!mounted) return;
-
-      if (!newCameraStatus.isGranted) {
-        // Camera permission still not granted, show warning screen
-        setState(() {
-          hasPermission = false;
-        });
-        return;
-      }
-    }
-
-    // At this point, camera is granted. Now check location permission
-    final locationWhenInUseStatus = await Permission.locationWhenInUse.status;
-    if (!mounted) return;
-
-    if (!locationWhenInUseStatus.isGranted) {
-      // Location (when in use) not granted, show warning
-      setState(() {
-        hasPermission = false;
-      });
-      return;
-    }
-
-    // If on iOS, check precise location using the method channel
-    if (Platform.isIOS) {
-      final accuracy =
-          await _accuracyChannel.invokeMethod<String>('checkLocationAccuracy');
-      if (accuracy == 'reducedAccuracy') {
-        // Precise location not granted on iOS, show warning
-        setState(() {
-          hasPermission = false;
-        });
-        return;
-      }
-    } else {
-      // On Android, also check Permission.location for full accuracy
-      final preciseStatus = await Permission.location.status;
-      if (!preciseStatus.isGranted) {
-        // Means we have coarse location (whenInUse) but not precise (location)
-        setState(() {
-          hasPermission = false;
-        });
-        return;
-      }
-    }
-
-    // All required permissions (camera & precise location) are good
     setState(() {
-      hasPermission = true;
+      hasPermission = hasPermissions;
     });
-    _initializeScanner();
+
+    if (hasPermissions) {
+      _initializeScanner();
+    }
   }
 
   void _initializeScanner() {
@@ -307,8 +254,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         _disposeScanner();
         break;
       case AppLifecycleState.resumed:
-        // Add slight delay when resuming to ensure camera system is ready
-        Future.delayed(const Duration(milliseconds: 500), () {
+        // Replace this line
+        Future.delayed(PermissionHelper.resumeDelay, () {
           if (mounted) {
             _checkAndInitializeScanner();
           }

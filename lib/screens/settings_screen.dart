@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io' show Platform;
-import 'package:flutter/services.dart';
+import '../utils/permission_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,12 +12,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   Map<Permission, PermissionStatus> _permissionStatuses = {};
-  final Map<Permission, bool> _isPreciseLocationDeniedMap = {};
+  Map<Permission, bool> _isPreciseLocationDeniedMap = {}; // Removed final
   bool _isLoading = true;
   bool _returnedFromSettings = false;
-
-  static const MethodChannel _accuracyChannel =
-      MethodChannel('com.biztrail.app/location_accuracy');
 
   @override
   void initState() {
@@ -50,103 +46,46 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     setState(() => _isLoading = true);
 
-    final permissions = [
-      Permission.camera,
-      Permission.locationWhenInUse,
-    ];
+    try {
+      final result = await PermissionHelper.loadPermissionStatuses();
 
-    // Get current statuses
-    final statuses = await Future.wait(
-      permissions.map((permission) => permission.status),
-    );
-
-    final newStatuses = Map.fromIterables(permissions, statuses);
-    final locationStatus = newStatuses[Permission.locationWhenInUse];
-
-    // Determine if precise location is denied
-    bool isPreciseDenied = false;
-
-    if (locationStatus?.isGranted == true) {
-      if (Platform.isIOS) {
-        // On iOS, check via the method channel
-        final accuracy = await _accuracyChannel.invokeMethod<String>('checkLocationAccuracy');
-        if (accuracy == 'reducedAccuracy') {
-          isPreciseDenied = true;
-        }
-      } else {
-        // On Android, check if Permission.location (fine) is granted.
-        // If not granted, it means we only have coarse location.
-        final preciseLocationStatus = await Permission.location.status;
-        if (!preciseLocationStatus.isGranted) {
-          isPreciseDenied = true;
-        }
-      }
+      setState(() {
+        _permissionStatuses = result.statuses;
+        _isPreciseLocationDeniedMap = result.isPreciseLocationDeniedMap;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading permissions: $e');
+      setState(() => _isLoading = false);
     }
-
-    _isPreciseLocationDeniedMap[Permission.locationWhenInUse] = isPreciseDenied;
-
-    setState(() {
-      _permissionStatuses = newStatuses;
-      _isLoading = false;
-    });
   }
 
   Future<void> _requestPermission(Permission permission) async {
     try {
-      if (permission == Permission.camera) {
-        final result = await permission.request();
-        setState(() {
-          _permissionStatuses[permission] = result;
-        });
+      setState(() => _isLoading = true);
 
-        if (result.isPermanentlyDenied) {
-          _showCameraPermissionDialog();
-        }
-      } else if (permission == Permission.locationWhenInUse) {
-        setState(() {
-          _isLoading = true;
-        });
+      final (status, isPreciseDenied) =
+          await PermissionHelper.requestPermission(permission);
 
-        // Request coarse/when-in-use permission
-        final coarseResult = await Permission.locationWhenInUse.request();
-
-        bool isPreciseDenied = false;
-        if (coarseResult.isGranted) {
-          if (Platform.isIOS) {
-            // Check accuracy via platform channel on iOS
-            final accuracy =
-                await _accuracyChannel.invokeMethod<String>('checkLocationAccuracy');
-            if (accuracy == 'reducedAccuracy') {
-              isPreciseDenied = true;
-            }
-          } else {
-            // On Android, check fine location permission
-            final preciseResult = await Permission.location.status;
-            if (!preciseResult.isGranted) {
-              isPreciseDenied = true;
-            }
-          }
-        }
-
-        setState(() {
-          _permissionStatuses[permission] = coarseResult;
+      setState(() {
+        _permissionStatuses[permission] = status;
+        if (permission == Permission.locationWhenInUse) {
           _isPreciseLocationDeniedMap[permission] = isPreciseDenied;
-          _isLoading = false;
-        });
-
-        if (!coarseResult.isGranted || isPreciseDenied) {
-          _showPreciseLocationDialog();
-          return;
         }
+      });
 
-        // Ensure consistency
-        await _loadPermissions();
+      if (status.isPermanentlyDenied && permission == Permission.camera) {
+        _showCameraPermissionDialog();
+      } else if ((permission == Permission.locationWhenInUse &&
+          (!status.isGranted || isPreciseDenied))) {
+        _showPreciseLocationDialog();
       }
+
+      await _loadPermissions(); // Refresh all statuses
     } catch (e) {
       debugPrint('Error handling permission: $e');
-      setState(() {
-        _isLoading = false;
-      });
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -155,14 +94,14 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Camera Access Required'),
+        title: const Text('Camera'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'BizTrail requires camera access to scan QR codes at business locations.',
-              style: TextStyle(fontSize: 16),
+            Text(
+              PermissionHelper.getPermissionDescription(Permission.camera),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -177,17 +116,9 @@ class _SettingsScreenState extends State<SettingsScreen>
               padding: const EdgeInsets.only(left: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: Platform.isIOS
-                    ? const [
-                        Text('1. Press "Open Settings"'),
-                        Text('2. Enable "Camera"'),
-                      ]
-                    : const [
-                        Text('1. Press "Open Settings"'),
-                        Text('2. Tap "Permissions"'),
-                        Text('3. Select "Camera"'),
-                        Text('4. Choose "Allow only while using the app"'),
-                      ],
+                children: PermissionHelper.getCameraPermissionInstructions()
+                    .map((instruction) => Text(instruction))
+                    .toList(),
               ),
             ),
           ],
@@ -215,14 +146,15 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Precise Location Required'),
+        title: const Text('Precise Location'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'BizTrail requires precise location to verify your presence at business locations.',
-              style: TextStyle(fontSize: 16),
+            Text(
+              PermissionHelper.getPermissionDescription(
+                  Permission.locationWhenInUse),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -237,20 +169,9 @@ class _SettingsScreenState extends State<SettingsScreen>
               padding: const EdgeInsets.only(left: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: Platform.isIOS
-                    ? const [
-                        Text('1. Press "Open Settings"'),
-                        Text('2. Tap "Location"'),
-                        Text('3. Enable "Precise Location"'),
-                      ]
-                    : const [
-                        Text('1. Press "Open Settings"'),
-                        Text('2. Tap "Permissions"'),
-                        Text('3. Select "Location"'),
-                        Text(
-                            '4. Ensure "Allow only while using the app" is selected'),
-                        Text('5. Enable "Use precise location"'),
-                      ],
+                children: PermissionHelper.getPreciseLocationInstructions()
+                    .map((instruction) => Text(instruction))
+                    .toList(),
               ),
             ),
           ],
@@ -273,28 +194,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  String _getPermissionDescription(Permission permission) {
-    switch (permission) {
-      case Permission.camera:
-        return 'Required for scanning QR codes at business locations';
-      case Permission.locationWhenInUse:
-        return 'Required to verify your presence at business locations';
-      default:
-        return 'Permission description not available';
-    }
-  }
-
-  String _getPermissionTitle(Permission permission) {
-    switch (permission) {
-      case Permission.camera:
-        return 'Camera';
-      case Permission.locationWhenInUse:
-        return 'Precise Location';
-      default:
-        return permission.toString();
-    }
-  }
-
   Widget _buildPermissionTile(Permission permission) {
     final status = _permissionStatuses[permission];
     final isPreciseLocationDenied =
@@ -303,30 +202,30 @@ class _SettingsScreenState extends State<SettingsScreen>
             _isPreciseLocationDeniedMap[permission] == true;
 
     return ListTile(
-      title: Text(_getPermissionTitle(permission)),
-      subtitle: Text(_getPermissionDescription(permission)),
+      title: Text(PermissionHelper.getPermissionTitle(permission)),
+      subtitle: Text(PermissionHelper.getPermissionDescription(permission)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: _getStatusColor(status, isPreciseLocationDenied)
+              color: PermissionHelper.getStatusColor(
+                      status, isPreciseLocationDenied)
                   .withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              isPreciseLocationDenied ? 'Denied' : _getStatusText(status),
+              PermissionHelper.getStatusText(status, isPreciseLocationDenied),
               style: TextStyle(
-                color: _getStatusColor(status, isPreciseLocationDenied),
+                color: PermissionHelper.getStatusColor(
+                    status, isPreciseLocationDenied),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          if (status?.isDenied == true ||
-              status?.isPermanentlyDenied == true ||
-              isPreciseLocationDenied)
+          if (PermissionHelper.needsAttention(status, isPreciseLocationDenied))
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () => _requestPermission(permission),
@@ -335,43 +234,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         ],
       ),
     );
-  }
-
-  Color _getStatusColor(
-      PermissionStatus? status, bool isPreciseLocationDenied) {
-    if (isPreciseLocationDenied) return Colors.red;
-    if (status == null) return Colors.grey;
-
-    switch (status) {
-      case PermissionStatus.granted:
-        return Colors.green;
-      case PermissionStatus.denied:
-      case PermissionStatus.permanentlyDenied:
-        return Colors.red;
-      case PermissionStatus.restricted:
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getStatusText(PermissionStatus? status) {
-    if (status?.isGranted == true &&
-        _isPreciseLocationDeniedMap[Permission.locationWhenInUse] == true) {
-      return 'Denied';
-    }
-
-    switch (status) {
-      case PermissionStatus.granted:
-        return 'Allowed';
-      case PermissionStatus.denied:
-      case PermissionStatus.permanentlyDenied:
-        return 'Denied';
-      case PermissionStatus.restricted:
-        return 'Restricted';
-      default:
-        return 'Unknown';
-    }
   }
 
   @override
