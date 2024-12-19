@@ -6,9 +6,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
+        // Android Gradle Plugin (AGP)
+        classpath 'com.android.tools.build:gradle:8.3.0'
+
+        // Kotlin Gradle Plugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
+
+        // Google Services Plugin
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -22,9 +27,7 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
-    project.evaluationDependsOn(":app")
+    evaluationDependsOn(":app")
 }
 
 tasks.register("clean", Delete) {

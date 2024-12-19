@@ -16,6 +16,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+        storeFile file("C:/Users/Mark/Documents/GitHub/BizTrail/release-key.jks")
+        storePassword "123456"
+        keyAlias "release-key"
+        keyPassword "123456"
+    }
     }
 
     compileOptions {
@@ -39,7 +45,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             ndk {
@@ -47,7 +53,7 @@ android {
             }
         }
         debug {
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.debug
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
             }
@@ -60,20 +66,16 @@ android {
             pickFirsts += ['androidsupportmultidexversion.txt']
         }
     }
-
-    dexOptions {
-        javaMaxHeapSize "4g"
-        preDexLibraries = false
-    }
 }
 
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-analytics'
-    implementation "com.google.android.gms:play-services-auth:20.7.0"
-    implementation "com.google.android.gms:play-services-maps:18.2.0"
-    implementation "com.google.android.gms:play-services-location:21.0.1"
-    implementation "com.google.android.gms:play-services-base:18.3.0"
+    implementation "com.google.android.gms:play-services-auth:21.3.0"
+    implementation "com.google.android.gms:play-services-maps:19.0.0"
+    implementation "com.google.android.gms:play-services-location:21.3.0"
+    implementation "com.google.android.gms:play-services-base:18.5.0"
+    implementation 'com.google.android.play:integrity:1.4.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.window:window:1.2.0'
     implementation 'androidx.window:window-java:1.2.0'

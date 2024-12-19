@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -25,7 +26,7 @@ class AuthService {
       await result.user?.sendEmailVerification();
       return result;
     } catch (e) {
-      print('Sign up error: $e');
+      debugPrint('Sign up error: $e');
       rethrow;
     }
   }
@@ -38,7 +39,7 @@ class AuthService {
         password: password,
       );
     } catch (e) {
-      print('Sign in error: $e');
+      debugPrint('Sign in error: $e');
       rethrow;
     }
   }
@@ -49,12 +50,12 @@ class AuthService {
       // Begin interactive sign in process
       final GoogleSignInAccount? googleUser =
           await _googleSignIn.signIn().catchError((error) {
-        print('Sign in error caught: $error');
+        debugPrint('Sign in error caught: $error');
         return null;
       });
 
       if (googleUser == null) {
-        print('Google Sign In was aborted');
+        debugPrint('Google Sign In was aborted');
         return null;
       }
 
@@ -63,7 +64,7 @@ class AuthService {
       try {
         googleAuth = await googleUser.authentication;
       } catch (e) {
-        print('Authentication error: $e');
+        debugPrint('Authentication error: $e');
         // If authentication fails, try to get tokens directly
         final tokens = await googleUser.authHeaders;
         final idToken = tokens['id_token'];
@@ -88,7 +89,7 @@ class AuthService {
       // Sign in with Firebase
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      print('Final Google sign in error: $e');
+      debugPrint('Final Google sign in error: $e');
       return null;
     }
   }
@@ -142,7 +143,7 @@ class AuthService {
 
       return userCredential;
     } catch (e) {
-      print('Apple sign in error: $e');
+      debugPrint('Apple sign in error: $e');
       return null;
     }
   }
@@ -152,7 +153,7 @@ class AuthService {
       await _googleSignIn.signOut();
       await _auth.signOut();
     } catch (e) {
-      print('Sign out error: $e');
+      debugPrint('Sign out error: $e');
       rethrow;
     }
   }
