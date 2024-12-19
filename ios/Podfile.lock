@@ -1495,8 +1495,10 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - Google-Maps-iOS-Utils
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
+  - GoogleMaps
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -1634,6 +1636,6 @@ SPEC CHECKSUMS:
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
 
-PODFILE CHECKSUM: a981d5fb5da9b6c2a9b825988d231ec855215071
+PODFILE CHECKSUM: 2dc06dd73726ef23a30cb6d40ff188adaa102f14
 
 COCOAPODS: 1.16.2

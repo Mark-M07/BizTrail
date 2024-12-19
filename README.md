@@ -73,6 +73,18 @@ flutter build appbundle
 
 ### iOS
 ```bash
+flutter clean
+rm -rf ios/Pods
+rm -rf ios/Podfile.lock
+rm -rf ios/.symlinks
+rm -rf ios/Flutter/Flutter.framework
+rm -rf ios/Flutter/Flutter.podspec
+flutter pub get
+cd ios
+pod install
+cd ..
+```
+```bash
 flutter build ios
 ```
 Then archive and distribute through Xcode.

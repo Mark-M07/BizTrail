@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
 
 class MapScreen extends StatefulWidget {
@@ -100,10 +101,13 @@ class _MapScreenState extends State<MapScreen> {
           markerId: MarkerId(doc.id),
           position: LatLng(geoPoint.latitude, geoPoint.longitude),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: InfoWindow(
-            title: data['title'] as String,
-            snippet: '${data['points']} points',
-          ),
+          onTap: () {
+            _mapController?.animateCamera(
+              CameraUpdate.newLatLng(
+                  LatLng(geoPoint.latitude, geoPoint.longitude)),
+            );
+            _showLocationDetails(data);
+          },
         );
         newMarkers.add(marker);
       }
@@ -125,6 +129,172 @@ class _MapScreenState extends State<MapScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _showLocationDetails(Map<String, dynamic> locationData) {
+    final String title = locationData['title'] as String;
+    final String address = locationData['address'] as String;
+    final GeoPoint position = locationData['position'] as GeoPoint;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (bottomSheetContext) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('${locationData['points']} points'),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _openDirections(address),
+                  icon: const Icon(Icons.directions),
+                  label: const Text('Directions'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _openMapsApp(title, position),
+                  icon: const Icon(Icons.info),
+                  label: const Text('More Info'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openDirections(String address) async {
+    final encodedAddress = Uri.encodeComponent(address);
+    Uri? url;
+    bool launched = false;
+
+    if (Platform.isIOS) {
+      // Try Google Maps first for better information
+      url = Uri.parse(
+          'comgooglemaps://?daddr=$encodedAddress&directionsmode=driving');
+      try {
+        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        launched = false;
+      }
+
+      if (!launched) {
+        // Fallback to Apple Maps if Google Maps isn't installed
+        url = Uri.parse('maps://?daddr=$encodedAddress');
+        try {
+          launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+        } catch (e) {
+          launched = false;
+        }
+      }
+    } else {
+      // Android navigation
+      url = Uri.parse('google.navigation:q=$encodedAddress&mode=d');
+      try {
+        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        launched = false;
+      }
+
+      if (!launched) {
+        url = Uri.parse(
+            'https://www.google.com/maps/dir/?api=1&destination=$encodedAddress');
+      }
+    }
+
+    if (!mounted) return;
+    _showMessage('Opening maps application...');
+
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        _showMessage('Could not open maps application', isError: true);
+      }
+    } catch (e) {
+      debugPrint('Error launching maps: $e');
+      if (!mounted) return;
+      _showMessage('Could not open maps application', isError: true);
+    }
+  }
+
+  Future<void> _openMapsApp(String title, GeoPoint position) async {
+    final String encodedTitle = Uri.encodeComponent(title);
+    Uri? url;
+    bool launched = false;
+
+    if (Platform.isIOS) {
+      // Try Google Maps first for better information
+      url = Uri.parse(
+          'comgooglemaps://?q=${position.latitude},${position.longitude}($encodedTitle)');
+      try {
+        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        launched = false;
+      }
+
+      if (!launched) {
+        // Fallback to Apple Maps
+        url = Uri.parse(
+            'maps://?ll=${position.latitude},${position.longitude}&q=$encodedTitle');
+        try {
+          launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+        } catch (e) {
+          launched = false;
+        }
+      }
+    } else {
+      url = Uri.parse(
+          'geo:${position.latitude},${position.longitude}?q=$encodedTitle');
+      try {
+        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        launched = false;
+      }
+
+      if (!launched) {
+        url = Uri.parse(
+            'https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}');
+      }
+    }
+
+    if (!mounted) return;
+    _showMessage('Opening maps application...');
+
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        _showMessage('Could not open maps application', isError: true);
+      }
+    } catch (e) {
+      debugPrint('Error launching maps: $e');
+      if (!mounted) return;
+      _showMessage('Could not open maps application', isError: true);
+    }
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    // Using the State's context to ensure correctness
+    if (!mounted) return; // Check before using context
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : null,
+        duration:
+            isError ? const Duration(seconds: 3) : const Duration(seconds: 1),
+      ),
+    );
   }
 
   LatLngBounds _getBounds(Set<Marker> markers) {
@@ -153,7 +323,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Platform-specific map controls
     return Stack(
       children: [
         GoogleMap(
@@ -164,8 +333,8 @@ class _MapScreenState extends State<MapScreen> {
           markers: _markers,
           myLocationButtonEnabled: true,
           myLocationEnabled: true,
-          zoomControlsEnabled: Platform.isAndroid, // Hide on iOS
-          mapToolbarEnabled: Platform.isAndroid, // Hide on iOS
+          zoomControlsEnabled: false, // Hide for both platforms
+          mapToolbarEnabled: false, // Hide for both platforms
           onMapCreated: _onMapCreated,
         ),
         if (_isLoading)

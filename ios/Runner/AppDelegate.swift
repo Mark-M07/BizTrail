@@ -16,13 +16,26 @@ import CoreLocation
         // Initialize Firebase
         FirebaseApp.configure()
 
-        // Initialize Google Maps
-        GMSServices.provideAPIKey("AIzaSyCkI7_eaRpS3YcXXt29lsFCdRy4zUZ59yk")
+        // Initialize Google Maps using the Firebase-generated iOS API key
+        let apiKey = "AIzaSyAAlmjoVHoyf3VKG8ZE0fF2zLzgWhJOqn4"
+        GMSServices.provideAPIKey(apiKey)
+        
+        // Print debug info
+        print("Google Maps SDK initialized with key: \(apiKey)")
+        print("Google Maps SDK version: \(GMSServices.sdkVersion())")
+        
+        // Enable metal renderer
+        GMSServices.setMetalRendererEnabled(true)
+        
+        // Add debug check for map rendering
+        let testMapView = GMSMapView()
+        print("Map view initialized")
 
         // Set up MethodChannel for checking location accuracy
         let controller = window?.rootViewController as! FlutterViewController
         channel = FlutterMethodChannel(name: "com.biztrail.app/location_accuracy",
-                                       binaryMessenger: controller.binaryMessenger)
+                                     binaryMessenger: controller.binaryMessenger)
+        
         channel.setMethodCallHandler { [weak self] (call, result) in
             guard let self = self else { return }
             switch call.method {
@@ -36,9 +49,9 @@ import CoreLocation
         // Initialize location manager
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        // Request when in use authorization at launch (optional, 
-        // you can also request this in Dart using permission_handler plugin)
         locationManager.requestWhenInUseAuthorization()
+        
+        print("Initial location authorization status: \(locationManager.authorizationStatus.rawValue)")
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -57,8 +70,22 @@ import CoreLocation
         }
     }
 
-    // CLLocationManagerDelegate methods (if needed)
+    // Enhanced CLLocationManagerDelegate method with debug info
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        // Handle changes in location authorization if necessary
+        print("Location authorization changed to status: \(status.rawValue)")
+        switch status {
+        case .authorizedWhenInUse:
+            print("Location authorized when in use")
+        case .authorizedAlways:
+            print("Location authorized always")
+        case .denied:
+            print("Location authorization denied")
+        case .restricted:
+            print("Location authorization restricted")
+        case .notDetermined:
+            print("Location authorization not determined")
+        @unknown default:
+            print("Unknown location authorization status")
+        }
     }
 }
