@@ -39,6 +39,13 @@ class _MapScreenState extends State<MapScreen> {
       "stylers": [
         {"visibility": "off"}
       ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels.text",
+      "stylers": [
+        {"visibility": "on"}
+      ]
     }
   ]);
 
