@@ -119,11 +119,11 @@ class MapLauncher {
     required BuildContext context,
   }) async {
     if (Platform.isIOS) {
-      // Try Google Maps first
-      final googleMapsUrl = Uri.parse(
-          'comgooglemaps://?daddr=${position.latitude},${position.longitude}'
-          '&dname=${Uri.encodeComponent(title)}'
-          '&directionsmode=driving');
+      // Try Google Maps first with business name instead of coordinates
+      final googleMapsUrl =
+          Uri.parse('comgooglemaps://?daddr=${Uri.encodeComponent(title)}'
+              '&destination_place_id=${Uri.encodeComponent(address)}'
+              '&center=${position.latitude},${position.longitude}');
 
       bool launched = false;
       try {
@@ -138,7 +138,8 @@ class MapLauncher {
       // If Google Maps fails, try Apple Maps
       if (!launched) {
         final appleMapsUrl =
-            Uri.parse('maps://?daddr=${Uri.encodeComponent(address)}'
+            Uri.parse('maps://?address=${Uri.encodeComponent(title)}'
+                '&ll=${position.latitude},${position.longitude}'
                 '&dirflg=d');
 
         try {
@@ -154,7 +155,8 @@ class MapLauncher {
       // If both native apps fail, open in browser
       if (!launched) {
         final webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1'
-            '&destination=${Uri.encodeComponent(address)}'
+            '&destination=${Uri.encodeComponent(title)}'
+            '&destination_place_id=${Uri.encodeComponent(address)}'
             '&travelmode=driving');
 
         try {
@@ -176,10 +178,10 @@ class MapLauncher {
         );
       }
     } else {
-      // Android handling
-      final androidUrl = Uri.parse(
-          'google.navigation:q=${position.latitude},${position.longitude}'
-          '&mode=d');
+      // Android handling - open directions without starting navigation
+      final androidUrl = Uri.parse('https://www.google.com/maps/dir/?api=1'
+          '&destination=${Uri.encodeComponent(title)}'
+          '&travelmode=driving');
 
       bool launched = false;
       try {
@@ -188,23 +190,7 @@ class MapLauncher {
           mode: LaunchMode.externalApplication,
         );
       } catch (e) {
-        debugPrint('Error launching Android navigation: $e');
-      }
-
-      // Fallback to web if native app fails
-      if (!launched) {
-        final webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1'
-            '&destination=${Uri.encodeComponent(address)}'
-            '&travelmode=driving');
-
-        try {
-          launched = await launchUrl(
-            webUrl,
-            mode: LaunchMode.externalApplication,
-          );
-        } catch (e) {
-          debugPrint('Error launching web maps: $e');
-        }
+        debugPrint('Error launching Android maps: $e');
       }
 
       if (!launched && context.mounted) {
