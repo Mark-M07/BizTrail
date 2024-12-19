@@ -71,10 +71,10 @@ class MapLauncher {
         );
       }
     } else {
-      // Android handling
-      final androidUrl =
-          Uri.parse('geo:${position.latitude},${position.longitude}'
-              '?q=${Uri.encodeComponent(title)}');
+      // Android handling with fallback
+      final androidUrl = Uri.parse('https://www.google.com/maps/search/?api=1'
+          '&query=${Uri.encodeComponent(title)}'
+          '&zoom=15');
 
       bool launched = false;
       try {
@@ -86,10 +86,11 @@ class MapLauncher {
         debugPrint('Error launching Android maps: $e');
       }
 
-      // Fallback to web if native app fails
+      // If app fails, try web browser
       if (!launched) {
         final webUrl = Uri.parse('https://www.google.com/maps/search/?api=1'
-            '&query=${Uri.encodeComponent(title)}');
+            '&query=${Uri.encodeComponent(title)}'
+            '&query_place_id=${Uri.encodeComponent(address)}');
 
         try {
           launched = await launchUrl(
@@ -178,7 +179,7 @@ class MapLauncher {
         );
       }
     } else {
-      // Android handling - open directions without starting navigation
+      // Android handling with fallback
       final androidUrl = Uri.parse('https://www.google.com/maps/dir/?api=1'
           '&destination=${Uri.encodeComponent(title)}'
           '&travelmode=driving');
@@ -191,6 +192,23 @@ class MapLauncher {
         );
       } catch (e) {
         debugPrint('Error launching Android maps: $e');
+      }
+
+      // If app fails, try web browser with full URL
+      if (!launched) {
+        final webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1'
+            '&destination=${Uri.encodeComponent(title)}'
+            '&destination_place_id=${Uri.encodeComponent(address)}'
+            '&travelmode=driving');
+
+        try {
+          launched = await launchUrl(
+            webUrl,
+            mode: LaunchMode.externalApplication,
+          );
+        } catch (e) {
+          debugPrint('Error launching web maps: $e');
+        }
       }
 
       if (!launched && context.mounted) {

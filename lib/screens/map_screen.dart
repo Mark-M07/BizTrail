@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/map_launcher.dart';
+import 'dart:convert';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -16,24 +17,30 @@ class _MapScreenState extends State<MapScreen> {
   final Set<Marker> _markers = {};
   static const LatLng _defaultLocation =
       LatLng(-37.24909666554568, 144.45323073712373);
-  static const String _mapStyle = '''
-[
-  {
-    "featureType": "poi",
-    "stylers": [{"visibility": "off"}]
-  },
-  {
-    "featureType": "transit",
-    "stylers": [{"visibility": "off"}]
-  },
-  {
-    "featureType": "road",
-    "elementType": "labels.icon",
-    "stylers": [{"visibility": "off"}]
-  }
-]
-''';
   bool _isLoading = true;
+
+  // Define map style as JSON string
+  static final String _mapStyle = jsonEncode([
+    {
+      "featureType": "poi",
+      "stylers": [
+        {"visibility": "off"}
+      ]
+    },
+    {
+      "featureType": "transit",
+      "stylers": [
+        {"visibility": "off"}
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels.icon",
+      "stylers": [
+        {"visibility": "off"}
+      ]
+    }
+  ]);
 
   @override
   void initState() {
@@ -43,7 +50,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _initializeMap() async {
     await _requestLocationPermission();
-    await _debugPrintFirestoreData();
+    await _loadLocations();
     setState(() => _isLoading = false);
   }
 
@@ -54,31 +61,6 @@ class _MapScreenState extends State<MapScreen> {
       return;
     }
     debugPrint('Location permission granted');
-  }
-
-  Future<void> _debugPrintFirestoreData() async {
-    try {
-      debugPrint('Fetching Firestore data...');
-      final locations = await FirebaseFirestore.instance
-          .collection('events')
-          .doc('businessKyneton')
-          .collection('locations')
-          .get();
-
-      debugPrint('Number of locations found: ${locations.docs.length}');
-      for (var doc in locations.docs) {
-        final data = doc.data();
-        debugPrint('Location: ${data['title']}, Position: ${data['position']}');
-      }
-    } catch (e) {
-      debugPrint('Error fetching Firestore data: $e');
-    }
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-    _mapController?.setMapStyle(_mapStyle);
-    _loadLocations();
   }
 
   Future<void> _loadLocations() async {
@@ -95,15 +77,15 @@ class _MapScreenState extends State<MapScreen> {
       for (var doc in locations.docs) {
         final data = doc.data();
         final geoPoint = data['position'] as GeoPoint;
+        final position = LatLng(geoPoint.latitude, geoPoint.longitude);
 
         final marker = Marker(
           markerId: MarkerId(doc.id),
-          position: LatLng(geoPoint.latitude, geoPoint.longitude),
+          position: position,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           onTap: () {
             _mapController?.animateCamera(
-              CameraUpdate.newLatLng(
-                  LatLng(geoPoint.latitude, geoPoint.longitude)),
+              CameraUpdate.newLatLng(position),
             );
             _showLocationDetails(data);
           },
@@ -220,9 +202,12 @@ class _MapScreenState extends State<MapScreen> {
           markers: _markers,
           myLocationButtonEnabled: true,
           myLocationEnabled: true,
-          zoomControlsEnabled: false, // Hide for both platforms
-          mapToolbarEnabled: false, // Hide for both platforms
-          onMapCreated: _onMapCreated,
+          zoomControlsEnabled: false,
+          mapToolbarEnabled: false,
+          onMapCreated: (GoogleMapController controller) {
+            _mapController = controller;
+          },
+          style: _mapStyle,
         ),
         if (_isLoading)
           const Center(
