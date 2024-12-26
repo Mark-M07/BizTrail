@@ -68,7 +68,10 @@ flutter run
 
 ### Android
 ```bash
-flutter build appbundle
+flutter clean
+flutter pub get
+flutter build apk --release
+adb install build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ### iOS

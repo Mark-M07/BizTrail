@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 import '../utils/map_launcher.dart';
 import 'dart:convert';
 
@@ -18,6 +19,7 @@ class _MapScreenState extends State<MapScreen> {
   static const LatLng _defaultLocation =
       LatLng(-37.24909666554568, 144.45323073712373);
   bool _isLoading = true;
+  Map<String, Map<String, dynamic>> _locationData = {};
 
   // Define map style as JSON string
   static final String _mapStyle = jsonEncode([
@@ -58,7 +60,9 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _initializeMap() async {
     await _requestLocationPermission();
     await _loadLocations();
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _requestLocationPermission() async {
@@ -70,9 +74,81 @@ class _MapScreenState extends State<MapScreen> {
     debugPrint('Location permission granted');
   }
 
-  Future<void> _loadLocations() async {
+  Future<void> _findNearestLocation() async {
     try {
       setState(() => _isLoading = true);
+
+      // Get current location with proper settings
+      final Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (_locationData.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No locations available')),
+          );
+        }
+        return;
+      }
+
+      // Find nearest location
+      double? shortestDistance;
+      Map<String, dynamic>? nearestLocation;
+
+      _locationData.forEach((id, locationData) {
+        final GeoPoint locationPosition = locationData['position'] as GeoPoint;
+        final double distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          locationPosition.latitude,
+          locationPosition.longitude,
+        );
+
+        if (shortestDistance == null || distance < shortestDistance!) {
+          shortestDistance = distance;
+          nearestLocation = locationData;
+        }
+      });
+
+      if (nearestLocation != null && mounted) {
+        final GeoPoint nearestPoint = nearestLocation!['position'] as GeoPoint;
+        final LatLng latLng =
+            LatLng(nearestPoint.latitude, nearestPoint.longitude);
+
+        // Animate camera to the nearest location without changing zoom
+        await _mapController?.animateCamera(
+          CameraUpdate.newLatLng(latLng),
+        );
+
+        // Show location details
+        if (mounted) {
+          _showLocationDetails(nearestLocation!);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error finding nearest location: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadLocations() async {
+    try {
+      if (mounted) {
+        setState(() => _isLoading = true);
+      }
 
       final locations = await FirebaseFirestore.instance
           .collection('events')
@@ -81,10 +157,15 @@ class _MapScreenState extends State<MapScreen> {
           .get();
 
       final Set<Marker> newMarkers = {};
+      final Map<String, Map<String, dynamic>> newLocationData = {};
+
       for (var doc in locations.docs) {
         final data = doc.data();
         final geoPoint = data['position'] as GeoPoint;
         final position = LatLng(geoPoint.latitude, geoPoint.longitude);
+
+        // Store location data
+        newLocationData[doc.id] = data;
 
         final marker = Marker(
           markerId: MarkerId(doc.id),
@@ -100,9 +181,12 @@ class _MapScreenState extends State<MapScreen> {
         newMarkers.add(marker);
       }
 
-      setState(() {
-        _markers.addAll(newMarkers);
-      });
+      if (mounted) {
+        setState(() {
+          _markers.addAll(newMarkers);
+          _locationData = newLocationData;
+        });
+      }
 
       if (newMarkers.isNotEmpty && _mapController != null) {
         await _mapController?.animateCamera(
@@ -115,7 +199,9 @@ class _MapScreenState extends State<MapScreen> {
     } catch (e) {
       debugPrint('Error loading locations: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -145,25 +231,53 @@ class _MapScreenState extends State<MapScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton.icon(
-                  onPressed: () => MapLauncher.openDirections(
-                    title: title,
-                    address: address,
-                    position: position,
-                    context: bottomSheetContext,
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(24),
+                  child: ElevatedButton.icon(
+                    onPressed: () => MapLauncher.openDirections(
+                      title: title,
+                      address: address,
+                      position: position,
+                      context: bottomSheetContext,
+                    ),
+                    icon: const Icon(Icons.directions),
+                    label: const Text('Directions'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
                   ),
-                  icon: const Icon(Icons.directions),
-                  label: const Text('Directions'),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => MapLauncher.openLocation(
-                    title: title,
-                    address: address,
-                    position: position,
-                    context: bottomSheetContext,
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(24),
+                  child: ElevatedButton.icon(
+                    onPressed: () => MapLauncher.openLocation(
+                      title: title,
+                      address: address,
+                      position: position,
+                      context: bottomSheetContext,
+                    ),
+                    icon: const Icon(Icons.info),
+                    label: const Text('More Info'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
                   ),
-                  icon: const Icon(Icons.info),
-                  label: const Text('More Info'),
                 ),
               ],
             ),
@@ -220,6 +334,33 @@ class _MapScreenState extends State<MapScreen> {
           const Center(
             child: CircularProgressIndicator(),
           ),
+        // Find Nearest Button
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 16,
+          child: Center(
+            child: Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(24),
+              child: ElevatedButton.icon(
+                onPressed: _findNearestLocation,
+                icon: const Icon(Icons.near_me),
+                label: const Text('Find Nearest'),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).primaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
